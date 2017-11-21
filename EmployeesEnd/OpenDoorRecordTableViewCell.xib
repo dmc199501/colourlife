@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" rowHeight="86" id="KGk-i7-Jjw" customClass="OpenDoorRecordTableViewCell">
+            <rect key="frame" x="0.0" y="0.0" width="366" height="86"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="366" height="85.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="7Xs-MP-ZaP">
+                        <rect key="frame" x="38" y="44" width="250" height="15"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="15" id="8Do-tY-9bd"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                        <color key="textColor" cocoaTouchSystemColor="scrollViewTexturedBackgroundColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="V1s-H4-e7A">
+                        <rect key="frame" x="288" y="33" width="65" height="20"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="65" id="qSS-5d-4Aa"/>
+                            <constraint firstAttribute="height" constant="20" id="t7I-Kr-5Zf"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" weight="heavy" pointSize="14"/>
+                        <state key="normal" title="点击开门">
+                            <color key="titleColor" red="0.13333333333333333" green="0.5490196078431373" blue="0.85098039215686272" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        </state>
+                    </button>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bof-3L-YiL">
+                        <rect key="frame" x="8" y="39" width="25" height="25"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="25" id="Z4I-uJ-caI"/>
+                            <constraint firstAttribute="width" constant="25" id="t0G-Ou-unP"/>
+                        </constraints>
+                    </imageView>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Phx-9c-0dq">
+                        <rect key="frame" x="38" y="13" width="250" height="21"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="21" id="qr1-hr-F6S"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                        <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="7Xs-MP-ZaP" firstAttribute="width" secondItem="Phx-9c-0dq" secondAttribute="width" id="6gf-2T-Ts5"/>
+                    <constraint firstItem="Phx-9c-0dq" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" constant="30" id="8VZ-mi-N1J"/>
+                    <constraint firstItem="bof-3L-YiL" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leadingMargin" id="Csj-64-bjK"/>
+                    <constraint firstItem="7Xs-MP-ZaP" firstAttribute="centerY" secondItem="bof-3L-YiL" secondAttribute="centerY" id="E16-c0-XjV"/>
+                    <constraint firstItem="V1s-H4-e7A" firstAttribute="leading" secondItem="Phx-9c-0dq" secondAttribute="trailing" id="PZr-iJ-Eqq"/>
+                    <constraint firstItem="7Xs-MP-ZaP" firstAttribute="top" secondItem="Phx-9c-0dq" secondAttribute="bottom" constant="10" id="WCB-oa-Nkk"/>
+                    <constraint firstItem="V1s-H4-e7A" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="a9X-Uu-lE5"/>
+                    <constraint firstItem="7Xs-MP-ZaP" firstAttribute="leading" secondItem="Phx-9c-0dq" secondAttribute="leading" id="cqo-ak-ubp"/>
+                    <constraint firstAttribute="trailingMargin" secondItem="V1s-H4-e7A" secondAttribute="trailing" constant="5" id="of9-a9-bPk"/>
+                    <constraint firstItem="Phx-9c-0dq" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="topMargin" constant="5" id="xeT-dt-9uT"/>
+                </constraints>
+            </tableViewCellContentView>
+            <connections>
+                <outlet property="doorName" destination="Phx-9c-0dq" id="8nL-de-low"/>
+                <outlet property="lastTime" destination="7Xs-MP-ZaP" id="ESE-cd-lFy"/>
+                <outlet property="lightImgV" destination="bof-3L-YiL" id="ct4-ky-uC5"/>
+                <outlet property="openDoorBtn" destination="V1s-H4-e7A" id="4Zn-Wt-17S"/>
+            </connections>
+            <point key="canvasLocation" x="483" y="319"/>
+        </tableViewCell>
+    </objects>
+</document>

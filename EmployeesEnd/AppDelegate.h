@@ -8,9 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
+
+static BOOL isProduction = FALSE;
 @interface AppDelegate : UIResponder <UIApplicationDelegate>
 
+@property (strong, nonatomic) UIViewController *viewController;
+
 @property (strong, nonatomic) UIWindow *window;
+
 
 
 @end
