@@ -266,7 +266,6 @@
         
         
         
-        
     }
     if ([cell.titleLabel.text isEqualToString:@"彩之云账号绑定"])
     {

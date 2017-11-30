@@ -88,7 +88,7 @@
     
     if ( [phoneTextField.text length] !=11)
     {
-        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"请确正确手机号再提交" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
+        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"请输入正确手机号再提交" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
         [alertView show];
         return;
     }

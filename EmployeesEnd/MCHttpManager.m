@@ -23,7 +23,10 @@
     mgr.responseSerializer.acceptableContentTypes = [mgr.responseSerializer.acceptableContentTypes setByAddingObject:@"text/html"];
     //返回数据格式为json格式，不需要再json解析了
     mgr.responseSerializer = [AFJSONResponseSerializer serializer];
-    mgr.requestSerializer = [AFJSONRequestSerializer serializer];
+    mgr.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html",@"text/plain", nil];
+    
+    
+
     mgr.requestSerializer.timeoutInterval = 10.f;
     [mgr.requestSerializer setValue:@"application/json"forHTTPHeaderField:@"Accept"];
     [mgr.requestSerializer setValue:@"application/x-www-form-urlencoded"forHTTPHeaderField:@"Content-Type"];

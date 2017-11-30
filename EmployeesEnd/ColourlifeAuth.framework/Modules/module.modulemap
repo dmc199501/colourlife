@@ -1,0 +1,6 @@
+framework module ColourlifeAuth {
+  umbrella header "ColourlifeAuth.h"
+
+  export *
+  module * { export * }
+}

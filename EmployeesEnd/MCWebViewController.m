@@ -85,7 +85,8 @@
     [super viewDidLoad];
     
   
-  
+//    self.mapSearch = [[AMapSearchAPI alloc] init];
+//    self.mapSearch.delegate = self;
       self.tol = 0;
     UIBarButtonItem *right2 = [[UIBarButtonItem alloc]initWithImage:[UIImage imageNamed:@"icon_close_normal"] style:UIBarButtonItemStylePlain target:self action:@selector(right1Click)];
     
@@ -107,8 +108,11 @@
      
    
     _webView.delegate = self;
-    
-    [self loadHtml];
+//    NSURL *filePath = [[NSBundle mainBundle] URLForResource:@"test(1).html" withExtension:nil];
+//    _webView.delegate = self;
+//    NSURLRequest * request=[NSURLRequest requestWithURL:filePath];
+//    [_webView loadRequest:request];
+   [self loadHtml];
     MBProgressHUD *hub = [MBProgressHUD showHUDAddedTo:self.view animated:YES];
     _weakHub = hub;
     hub.opacity = 1.0;
@@ -343,7 +347,7 @@
     
     NSString *urlString = [[request URL] absoluteString];
     
-   
+    
     
     NSArray *urlComps = [urlString componentsSeparatedByString:@":///"];
     if ([urlString containsString:@"cgj://share"]) {
@@ -392,7 +396,17 @@
         }else if ([funcStr isEqualToString:@"file"]) {
             [self popUploader];
             
+        }else if ([funcStr isEqualToString:@"refresh"]){
+            [self newLoad];
+        }else if ([funcStr isEqualToString:@"return"]){
+        
+            [self returnUp];
+        
+        }else if ([funcStr isEqualToString:@"shutDown"]){
+            [self right1Click];
+        
         }
+           
     
     
     }
@@ -452,11 +466,13 @@
         if (cuLocation) {
             
             cuLocation = cuLocation.locationMarsFromEarth;
-            //            [self reverseGeoWithLng:cuLocation.coordinate.longitude andLat:cuLocation.coordinate.latitude];
+           
+           // [self reverseGeoWithLng:cuLocation.coordinate.longitude andLat:cuLocation.coordinate.latitude];
+           
             NSString *retStr = [self toJSONStringWithDictionary:@{@"longitude": @(cuLocation.coordinate.longitude), @"latitude": @(cuLocation.coordinate.latitude), @"province": @"", @"city":@"", @"district":@"", @"address":@""} andFunctionCode:@"coordinate"];
-            
+//
             [self nativeCallJSWithParamsByFunctionCode:@"coordinate" andData:retStr];
-            //            [self getCurrentLocationWithLng:[NSString stringWithFormat:@"%f",cuLocation.coordinate.longitude] andLat:[NSString stringWithFormat:@"%f" ,cuLocation.coordinate.latitude]];
+            
             
         } else {
             
@@ -471,20 +487,22 @@
     
     //构造AMapReGeocodeSearchRequest对象  118.083943,24.444355
     
-    _regeo = [[AMapReGeocodeSearchRequest alloc] init];
-    _regeo.location = [AMapGeoPoint locationWithLatitude:lng longitude:lat];
-    _regeo.radius = 10000;
-    _regeo.requireExtension = YES;
-    NSLog(@"%@",_regeo);
+    AMapReGeocodeSearchRequest *regeo = [[AMapReGeocodeSearchRequest alloc] init];
+    
+    regeo.location = [AMapGeoPoint locationWithLatitude:lat longitude:lng];
+    regeo.radius = 10000;
+    regeo.requireExtension = YES;
+    
     //发起逆地理编码
+    [self.mapSearch AMapReGoecodeSearch: regeo];
+
     
-    [self.mapSearchs AMapReGoecodeSearch:_regeo];
-    
-    //b[regeo release];
+   
 }
 #pragma mark - 实现逆地理编码的回调函数
 - (void)onReGeocodeSearchDone:(AMapReGeocodeSearchRequest *)request response:(AMapReGeocodeSearchResponse *)response
 {
+   
     
     if(response.regeocode != nil)
     {
@@ -498,6 +516,8 @@
         NSString *lat = [NSString stringWithFormat:@"%lf", request.location.latitude];
         
         NSString *retStr = [self toJSONStringWithDictionary:@{@"longitude": lng, @"latitude": lat, @"province": province, @"city":city, @"district":district, @"address": address} andFunctionCode:@"coordinate"];
+//         UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"" message:retStr delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"ok", nil];
+//        [alert show];
         [self nativeCallJSWithParamsByFunctionCode:@"coordinate" andData:retStr];
         
         

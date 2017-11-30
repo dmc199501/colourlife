@@ -8,6 +8,7 @@
 
 #import "MCDataKBViewController.h"
 #import "MCDataChanggeViewController.h"
+#import "MyMD5.h"
 @interface MCDataKBViewController ()<MCDataChanggeViewControllerDeleGete>
 @property (nonatomic, assign) int page;  //请求页码
 
@@ -46,8 +47,9 @@
     [notiCenter addObserver:self selector:@selector(receiveNotification:) name:@"架构传值" object:nil];
     
     
-    NSString *oid =  [[MCPublicDataSingleton sharePublicDataSingleton].userDictionary objectForKey:@"orgId"];;
-    [self gtsArea:oid];
+    
+    [self getAuthApp];
+    
     
     
     
@@ -101,6 +103,69 @@
     
     
 }
+#pragma mark -获取资源2.0授权
+- (void)getAuthApp{
+    
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSString *corp = [defaults objectForKey:@"corpId"];
+    NSString *ts = [defaults objectForKey:@"ts"];
+    
+    
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    
+    [dic setValue:@"33f09c7ca5e6491fbcdfd363cf58851e" forKey:@"app_uuid"];//app分配id
+    [dic setValue:corp forKey:@"corp_uuid"];//租户ID
+    
+    NSString *singe = [NSString stringWithFormat:@"%@%@%@",@"33f09c7ca5e6491fbcdfd363cf58851e",ts,@"48a8c06966fb40e3b1c55c95692be1d8"];
+    
+    NSString *  signature = [MyMD5 md5:singe];//签名=( APPID +ts +appSecret)md5
+    [dic setValue:signature forKey:@"signature"];
+    [dic setValue:ts forKey:@"timestamp"];//时间戳
+    NSLog(@"%@",dic);
+    
+    
+    
+    [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/authms/auth/app" parameters:dic success:^(id responseObject) {
+        
+        NSDictionary *dicDictionary = responseObject;
+        NSLog(@"%@",dicDictionary);
+        
+        if ([dicDictionary[@"code"] integerValue] == 0 &&[dicDictionary[@"content"] isKindOfClass:[NSDictionary class]] )
+        {
+            
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject:[dicDictionary[@"content"] objectForKey:@"accessToken"] forKey:@"orgToken"];
+            
+            [defaults synchronize];
+            
+            NSString *oid =  [[MCPublicDataSingleton sharePublicDataSingleton].userDictionary objectForKey:@"orgId"];
+            [self gtsArea:oid];
+            
+            
+        }else{
+            
+            
+        }
+        
+        
+        
+        
+    } failure:^(NSError *error) {
+        
+        
+        NSLog(@"****%@", error);
+        
+        
+        
+    }];
+    
+    
+    
+    
+    
+    
+}
+
 - (void)setUI{
 
     listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-64-50) style:UITableViewStyleGrouped];
@@ -118,72 +183,56 @@
 - (void)gtsArea:(NSString *)oid{
     [listTableView removeFromSuperview];
     
-    NSCalendar *gregorian = [[NSCalendar alloc]
-                             initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    // 获取当前日期
-    NSDate* dt = [NSDate date];
-    // 定义一个时间字段的旗标，指定将会获取指定年、月、日、时、分、秒的信息
-    unsigned unitFlags = NSCalendarUnitYear |
-    NSCalendarUnitMonth |  NSCalendarUnitDay |
-    NSCalendarUnitHour |  NSCalendarUnitMinute |
-    NSCalendarUnitSecond | NSCalendarUnitWeekday;
-    // 获取不同时间字段的信息
-    NSDateComponents* comp = [gregorian components: unitFlags
-                                          fromDate:dt];
-    NSString *year = [NSString stringWithFormat:@"%ld",comp.year];
-    
-    
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
-    NSString *username = [defaults objectForKey:@"userName"];//根据键值取出name
-    
-   
+    NSString *orgToken = [defaults objectForKey:@"orgToken"];
+    NSString *corpID = [defaults objectForKey:@"corpId"];
     NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
-    [sendDictionary setValue:username forKey:@"uid"];
-    [sendDictionary setValue:year forKey:@"year"];
-    [sendDictionary setValue:oid forKey:@"branch"];
+    [sendDictionary setValue:oid forKey:@"orgUuid"];
+    [sendDictionary setValue:orgToken forKey:@"token"];
+    [sendDictionary setValue:corpID forKey:@"corpId"];
     
     
     
-   
-    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/bigdata/kpi" parameters:sendDictionary success:^(id responseObject) {
+    
+    
+    NSLog(@"%@",sendDictionary);
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/resourcems/community/statistics" parameters:sendDictionary success:^(id responseObject) {
         NSDictionary *dicDictionary = responseObject;
-        
+        NSLog(@"%@",dicDictionary);
        
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
+            
             if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
             {
-                
-                
-                
                 self.datadic = dicDictionary[@"content"];
-                [listTableView reloadData];
                
+                
                 [self gtsAreaOne:oid];
-               
+
                 
             }
             
-            return ;
             
             
             
         }else{
             
             
-            
-            
-        }
+                   }
         
         
-        
+        NSLog(@"----%@",responseObject);
         
     } failure:^(NSError *error) {
         
-       
+        NSLog(@"****%@", error);
         
     }];
     
+    
+    
+   
     
     
 }
@@ -192,47 +241,55 @@
 - (void)gtsAreaOne:(NSString *)oid{
     [listTableView removeFromSuperview];
     
-    NSCalendar *gregorian = [[NSCalendar alloc]
-                             initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    // 获取当前日期
-    NSDate* dt = [NSDate date];
-    // 定义一个时间字段的旗标，指定将会获取指定年、月、日、时、分、秒的信息
-    unsigned unitFlags = NSCalendarUnitYear |
-    NSCalendarUnitMonth |  NSCalendarUnitDay |
-    NSCalendarUnitHour |  NSCalendarUnitMinute |
-    NSCalendarUnitSecond | NSCalendarUnitWeekday;
-    // 获取不同时间字段的信息
-    NSDateComponents* comp = [gregorian components: unitFlags
-                                          fromDate:dt];
-    NSString *year = [NSString stringWithFormat:@"%ld",comp.year];
-    
     
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
-    NSString *username = [defaults objectForKey:@"userName"];//根据键值取出name
-    
+    NSString *orgtype = [defaults objectForKey:@"orgtype"];//组织架构类型
+    NSInteger level = 0;
     
     NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
+    if ([orgtype isEqualToString:@"彩生活集团"]) {
+        level = 1;
+    }
+    if ([orgtype isEqualToString:@"大区"]) {
+        level = 2;
+        [sendDictionary setValue:oid forKey:@"regiongroupUuid"];
+    }
+    if ([orgtype isEqualToString:@"事业部"]) {
+        level = 3;
+        [sendDictionary setValue:oid forKey:@"districtUuid"];
+    }
+    if ([orgtype isEqualToString:@"小区"]) {
+        level = 4;
+        [sendDictionary setValue:oid forKey:@"regionUuid"];
+    }
+    
+    
+    
+    [sendDictionary setValue:@"9959f117-df60-4d1b-a354-776c20ffb8c7" forKey:@"groupUuid"];
+    [sendDictionary setValue:@(level) forKey:@"level"];
+    //[sendDictionary setValue:corpID forKey:@"corpId"];
    
-    [sendDictionary setValue:oid forKey:@"id"];
+    NSLog(@"%@-%@",sendDictionary,orgtype);
     
     
     
-    
-    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/resource/statistics" parameters:sendDictionary success:^(id responseObject) {
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/xsfxt/report/charge_receipt" parameters:sendDictionary success:^(id responseObject) {
         NSDictionary *dicDictionary = responseObject;
-        
+        NSLog(@"%@",dicDictionary);
         
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
-            if ([dicDictionary[@"content"] isKindOfClass:[NSArray class]])
+            if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
             {
                 
                 
                 
-                self.datadicTwo = dicDictionary[@"content"][0];
+                self.datadicTwo = dicDictionary[@"content"];
+              
+                [self setUI];
                 [listTableView reloadData];
                 
-                [self setUI];
+                
                 
                 
             }
@@ -243,7 +300,8 @@
             
         }else{
             
-            
+             [self setUI];
+            [SVProgressHUD showErrorWithStatus:[dicDictionary objectForKey:@"message"]];
             
             
         }
@@ -281,7 +339,7 @@
 }
 -(void)viewController:(MCDataChanggeViewController*)ViewController didPushVlaueWithAddress:(id)address{
 
-    NSLog(@"返回的字典%@",address);
+   
    
 }
 - (void)didReceiveMemoryWarning {
@@ -424,7 +482,7 @@
             if (_classId ==0) {
                  return 5;
             }else{
-             return 4;
+             return 5;
             
             }
            
@@ -459,6 +517,22 @@
                     {
                         case 0:
                         {
+                            [cell.textLabel setText:@"当前查询费用日期"];
+                            
+                            UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH-170, 12.5, 150, 20)];
+                            label.textAlignment = NSTextAlignmentRight;
+                            label.font = [UIFont systemFontOfSize:13];
+                            [label setTextColor:GRAY_COLOR_ZZ];
+                            [cell addSubview:label];
+                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"dateTime"]];
+                            
+                            
+                            
+                        }
+                            break;
+
+                        case 1:
+                        {
                             [cell.textLabel setText:@"应收"];
                             
                             UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH-170, 12.5, 150, 20)];
@@ -466,7 +540,7 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"normalFee"]];
+                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"receivableValue"]];
                             
                             
                             
@@ -474,7 +548,7 @@
                             break;
                             
                             
-                        case 1:
+                        case 2:
                         {
                             [cell.textLabel setText:@"实收"];
                             
@@ -483,11 +557,11 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"receivedFee"]];
+                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"chargeValue"]];
                             
                         }
                             break;
-                        case 2:
+                        case 3:
                         {
                             [cell.textLabel setText:@"收费率"];
                             UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH-170, 12.5, 150, 20)];
@@ -495,13 +569,13 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"feeRate"]];
+                            label.text = [NSString stringWithFormat:@"%@",@"0"];
                             
                             
                         }
                             break;
                             
-                        case 3:
+                        case 4:
                         {
                             [cell.textLabel setText:@"业主投诉数"];
                             UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH-170, 12.5, 150, 20)];
@@ -509,7 +583,7 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"complainCount"]];
+                            label.text = [NSString stringWithFormat:@"%@",@"0"];
                         }
                             break;
 
@@ -561,7 +635,7 @@
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
                            
-                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"const_area"]];
+                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"area"]];
                             
                             
                             
@@ -578,7 +652,7 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"smallarea_num"]];
+                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"count"]];
                             
                         }
                             break;
@@ -590,7 +664,7 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"parking_space"]];
+                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"upParkingSpace"]];
                             
                             
                         }
@@ -603,7 +677,7 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"app_num"]];
+                            label.text = [NSString stringWithFormat:@"%@",@"0"];
                         }
                             break;
                         case 4:
@@ -614,7 +688,7 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"join_smallarea_num"]];
+                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"count"]];
                         }
                             break;
                             

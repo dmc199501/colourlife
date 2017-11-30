@@ -694,6 +694,8 @@
 		70CA639E1E0A55A60066991F /* beijing_home@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 70CA639C1E0A55A60066991F /* beijing_home@3x.png */; };
 		70CA63A11E0A5F6B0066991F /* logo_home@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 70CA639F1E0A5F6B0066991F /* logo_home@2x.png */; };
 		70CA63A21E0A5F6B0066991F /* logo_home@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 70CA63A01E0A5F6B0066991F /* logo_home@3x.png */; };
+		70CFCFF21FCC1BEF00374D13 /* test.html in Resources */ = {isa = PBXBuildFile; fileRef = 70CFCFF11FCC1BEF00374D13 /* test.html */; };
+		70CFCFF81FCC28FB00374D13 /* test(1).html in Resources */ = {isa = PBXBuildFile; fileRef = 70CFCFF71FCC28FB00374D13 /* test(1).html */; };
 		70D045D81EC45BE700EC8AB0 /* guishu.png in Resources */ = {isa = PBXBuildFile; fileRef = 70D045D71EC45BE700EC8AB0 /* guishu.png */; };
 		70D045DF1EC46C3A00EC8AB0 /* mf@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 70D045D91EC46C3A00EC8AB0 /* mf@2x.png */; };
 		70D045E01EC46C3A00EC8AB0 /* mf@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 70D045DA1EC46C3A00EC8AB0 /* mf@3x.png */; };
@@ -1658,6 +1660,8 @@
 		70CA639C1E0A55A60066991F /* beijing_home@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "beijing_home@3x.png"; sourceTree = "<group>"; };
 		70CA639F1E0A5F6B0066991F /* logo_home@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo_home@2x.png"; sourceTree = "<group>"; };
 		70CA63A01E0A5F6B0066991F /* logo_home@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo_home@3x.png"; sourceTree = "<group>"; };
+		70CFCFF11FCC1BEF00374D13 /* test.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = test.html; sourceTree = "<group>"; };
+		70CFCFF71FCC28FB00374D13 /* test(1).html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "test(1).html"; sourceTree = "<group>"; };
 		70D045D71EC45BE700EC8AB0 /* guishu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = guishu.png; sourceTree = "<group>"; };
 		70D045D91EC46C3A00EC8AB0 /* mf@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "mf@2x.png"; sourceTree = "<group>"; };
 		70D045DA1EC46C3A00EC8AB0 /* mf@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "mf@3x.png"; sourceTree = "<group>"; };
@@ -2280,6 +2284,8 @@
 		708415861DD1CCBD003679B9 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				70CFCFF71FCC28FB00374D13 /* test(1).html */,
+				70CFCFF11FCC1BEF00374D13 /* test.html */,
 				703D27981F90A04D006A2975 /* cgjshare.png */,
 				70C9C0241F7A370000E86DA3 /* kong@2x.png */,
 				70C9C0251F7A370000E86DA3 /* kong@3x.png */,
@@ -3956,8 +3962,10 @@
 				70BA16DA1EE92DB900642D50 /* yue@2x.png in Resources */,
 				70B4D20E1ED9124F002753F6 /* addressbook_fill@3x.png in Resources */,
 				70BA18361EF7F59100642D50 /* ApplyAuthViewController.xib in Resources */,
+				70CFCFF21FCC1BEF00374D13 /* test.html in Resources */,
 				70C9C14C1F7E1C8B00E86DA3 /* ShareSDKUI.bundle in Resources */,
 				7022A9CB1F03B8F600ADCBBA /* erweima@2x.png in Resources */,
+				70CFCFF81FCC28FB00374D13 /* test(1).html in Resources */,
 				70BA183B1EF7F5A800642D50 /* DetailApplyAuthViewController.xib in Resources */,
 				708417421DD56F31003679B9 /* tianjiatu_@2x.png in Resources */,
 				708417431DD56F31003679B9 /* tianjiatu_@3x.png in Resources */,
@@ -4444,7 +4452,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = EmployeesEnd/EmployeesEnd.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Shenzhen Cai Yun Network Technology Co., Ltd";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Jing Tang (GJM4529BAN)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				DEVELOPMENT_TEAM = EP35US23H7;
 				ENABLE_BITCODE = NO;
@@ -4492,7 +4500,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = EmployeesEnd/EmployeesEnd.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: Shenzhen Cai Yun Network Technology Co., Ltd";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Jing Tang (GJM4529BAN)";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				DEVELOPMENT_TEAM = EP35US23H7;
 				ENABLE_BITCODE = NO;

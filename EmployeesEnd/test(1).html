@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script>
+
+var device_type = navigator.userAgent;//获取userAgent信息  
+var md = new MobileDetect(device_type);//初始化mobile-detect  
+var os = md.os();//获取系统  
+
+alert(device_type);
+alert(md);
+alert(os);
+
+function closeWin()
+{
+	 alert("closeWin");
+	 if (os == "iOS") {//ios系统的处理  
+		alert("iOS,closeWin");
+		loadURL("colour:///shutDown");
+	 }
+	 
+	 if(os == "AndroidOS"){
+		alert("AndroidOS,closeWin");
+		js.GetFinish();
+		
+	 }
+}
+function refreshWin()
+{
+	 alert("refreshWin");
+	 if (os == "iOS") {//ios系统的处理  
+		alert("iOS,refreshWin");
+		loadURL("colour:///refresh");
+        location.href = "colour:///refresh";
+	 }
+	 
+	 if(os == "AndroidOS"){
+		alert("AndroidOS,refreshWin");
+		js.GetRefresh();
+	 }
+}
+function returnWin()
+{
+	 alert("returnWin");
+	 if (os == "iOS") {//ios系统的处理  
+		alert("iOS,returnWin");
+		loadURL("colour:///return");
+	 }
+	 
+	 if(os == "AndroidOS"){
+		alert("AndroidOS,returnWin");
+		js.GetReturn() ;
+	 }
+}
+function loadURL(url) 
+{
+      var iFrame;
+      iFrame = document.createElement("iframe");
+      iFrame.setAttribute("src", url);
+      iFrame.setAttribute("style", "display:none;");
+      iFrame.setAttribute("height", "0px");
+      iFrame.setAttribute("width", "0px");
+      iFrame.setAttribute("frameborder", "0");
+      document.body.appendChild(iFrame);
+      // 发起请求后这个iFrame就没用了，所以把它从dom上移除掉
+      iFrame.parentNode.removeChild(iFrame);
+      iFrame = null;
+}
+</script>
+</head>
+<body>
+
+<h1 onclick="closeWin()">点击关闭</h1>
+<h1 onclick="refreshWin()">点击刷新</h1>
+<h1 onclick="returnWin()">点击返回</h1>
+
+</body>
+</html>

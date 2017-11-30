@@ -20,7 +20,7 @@
     self.navigationItem.title = @"忘记密码";
     IDTextField = [[UITextField alloc]initWithFrame:CGRectMake(15, 20, self.view.frame.size.width - 30, 40)];
     [self.view addSubview:IDTextField];
-    [IDTextField setPlaceholder:@"请输短信验证码"];
+    [IDTextField setPlaceholder:@"请输入短信验证码"];
     [IDTextField setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
     [IDTextField setBackgroundColor:[UIColor whiteColor]];
     [IDTextField setFont:[UIFont systemFontOfSize:14]];
@@ -76,14 +76,14 @@
     }
     if ([nameTextField.text length] == 0 )
     {
-        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"请新密码再提交" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
+        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"请输入新密码再提交" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
         [alertView show];
         return;
     }
     
-    if ( [phoneTextField.text length] !=11)
+    if ( [phoneTextField.text length] ==0)
     {
-        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"请确认再提交" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
+        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"请确认新密码再提交" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
         [alertView show];
         return;
     }
@@ -119,6 +119,7 @@
                 if ([vc isKindOfClass:[MCLoginViewControler class]])
                 {
                     [self.navigationController popToViewController:vc animated:YES];
+                    [SVProgressHUD showSuccessWithStatus:@"修改成功 "];
                 }
             }
             

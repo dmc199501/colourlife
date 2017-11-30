@@ -70,7 +70,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+   
     
     [self deviceIPAdress];
     [self setAlias];
@@ -454,33 +454,20 @@
 
 - (void)gtsArea{
     
-    NSCalendar *gregorian = [[NSCalendar alloc]
-                             initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    // 获取当前日期
-    NSDate* dt = [NSDate date];
-    // 定义一个时间字段的旗标，指定将会获取指定年、月、日、时、分、秒的信息
-    unsigned unitFlags = NSCalendarUnitYear |
-    NSCalendarUnitMonth |  NSCalendarUnitDay |
-    NSCalendarUnitHour |  NSCalendarUnitMinute |
-    NSCalendarUnitSecond | NSCalendarUnitWeekday;
-    // 获取不同时间字段的信息
-    NSDateComponents* comp = [gregorian components: unitFlags
-                                          fromDate:dt];
-    NSString *year = [NSString stringWithFormat:@"%ld",comp.year];
-   
-    
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
-    NSString *username = [defaults objectForKey:@"userName"];//根据键值取出name
-    
-    NSString *oid = [defaults objectForKey:@"orgid"];
-    NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
-    [sendDictionary setValue:@"9959f117-df60-4d1b-a354-776c20ffb8c7" forKey:@"id"];
+    NSString *orgToken = [defaults objectForKey:@"orgToken"];
+    NSString *corpID = [defaults objectForKey:@"corpId"];
+NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
+    [sendDictionary setValue:@"9959f117-df60-4d1b-a354-776c20ffb8c7" forKey:@"orgUuid"];
+    [sendDictionary setValue:orgToken forKey:@"token"];
+     [sendDictionary setValue:corpID forKey:@"corpId"];
+
     
     
     
     
     NSLog(@"%@",sendDictionary);
-    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/resource/statistics" parameters:sendDictionary success:^(id responseObject) {
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/resourcems/community/statistics" parameters:sendDictionary success:^(id responseObject) {
         NSDictionary *dicDictionary = responseObject;
         NSLog(@"%@",dicDictionary);
         [Activityarea stopAnimating]; // 结束旋转
@@ -490,14 +477,15 @@
         [Activitydistrict setHidesWhenStopped:YES]; //当旋转结束时隐藏
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
-            if ([dicDictionary[@"content"] isKindOfClass:[NSArray class]])
+            
+            if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
             {
                 
-                NSString *area = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][0][@"const_area"]];
+                NSString *area = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"area"]];
                 
-                self.areaDic = dicDictionary[@"content"][0];
+                self.areaDic = dicDictionary[@"content"];
                 
-                NSString *district = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][0][@"smallarea_num"]];
+                NSString *district = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"count"]];
                 
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
                 
@@ -1142,10 +1130,11 @@
         [districtlLaber setText:[NSString stringWithFormat:@"%@",mianji]];
        
         [areaLaber setText:[NSString stringWithFormat:@"%.2f",[xiaoqu floatValue]/10000]];
-        [self gtsArea];//面积和小区
+        [self getAuthApp];
+       //面积和小区
     }else{
         
-        [self gtsArea];//面积和小区
+        [self getAuthApp];//面积和小区
     }
     
     if (jixiao.length>0) {
@@ -1163,8 +1152,128 @@
 
 
 }
+#pragma mark -获取资源2.0授权
+- (void)getAuthApp{
+    
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSString *corp = [defaults objectForKey:@"corpId"];
+    NSString *ts = [defaults objectForKey:@"ts"];
+    
+    
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    
+    [dic setValue:@"33f09c7ca5e6491fbcdfd363cf58851e" forKey:@"app_uuid"];//app分配id
+    [dic setValue:corp forKey:@"corp_uuid"];//租户ID
+    
+    NSString *singe = [NSString stringWithFormat:@"%@%@%@",@"33f09c7ca5e6491fbcdfd363cf58851e",ts,@"48a8c06966fb40e3b1c55c95692be1d8"];
+    
+    NSString *  signature = [MyMD5 md5:singe];//签名=( APPID +ts +appSecret)md5
+    [dic setValue:signature forKey:@"signature"];
+    [dic setValue:ts forKey:@"timestamp"];//时间戳
+    NSLog(@"%@",dic);
+    
+       
+    
+    [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/authms/auth/app" parameters:dic success:^(id responseObject) {
+        
+        NSDictionary *dicDictionary = responseObject;
+        NSLog(@"%@",dicDictionary);
+        
+        if ([dicDictionary[@"code"] integerValue] == 0 &&[dicDictionary[@"content"] isKindOfClass:[NSDictionary class]] )
+        {
+            
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject:[dicDictionary[@"content"] objectForKey:@"accessToken"] forKey:@"orgToken"];
+            
+            [defaults synchronize];
+             [self gtsArea];//获取资源数据
+            [self getOrgidType];//获取当前人的组织架构类型
+            
+            
+            
+            
+        }else{
+            
+            
+        }
+        
+        
+        
+        
+    } failure:^(NSError *error) {
+        
+        
+        NSLog(@"****%@", error);
+        
+        
+        
+    }];
+    
+    
+    
+    
+    
+    
+}
+#pragma mark-获取组织架构详情类型
+-(void)getOrgidType{
+    
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSString *orgToken = [defaults objectForKey:@"orgToken"];
+    NSString *corpID = [defaults objectForKey:@"corpId"];
+    NSString *oid =  [[MCPublicDataSingleton sharePublicDataSingleton].userDictionary objectForKey:@"orgId"];
+    NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
+    [sendDictionary setValue:oid forKey:@"orgUuid"];
+    [sendDictionary setValue:orgToken forKey:@"token"];
+    [sendDictionary setValue:corpID forKey:@"corpId"];
+    
+    
+    
+    
+    
+    NSLog(@"%@",sendDictionary);
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/orgms/org" parameters:sendDictionary success:^(id responseObject) {
+        NSDictionary *dicDictionary = responseObject;
+       
+       
+        if ([dicDictionary[@"code"] integerValue] == 0 )
+        {
+            id orgType =[[dicDictionary objectForKey:@"content"] objectForKey:@"orgType"] ;
+           
+            NSString *type = @"";
+          
+            if ([orgType isEqual:[NSNull null]]) {
+                type = [NSString stringWithFormat:@"小区"];
+               
+            }else{
+            
+                 type = [NSString stringWithFormat:@"%@",[[dicDictionary objectForKey:@"content"] objectForKey:@"orgType"]];
+            }
+           
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject:type forKey:@"orgtype"];
+            
+            [defaults synchronize];
+
+            
+            
+        }else{
+            
+            
+        }
+        
+        
+        NSLog(@"----%@",responseObject);
+        
+    } failure:^(NSError *error) {
+        
+        NSLog(@"****%@", error);
+        
+    }];
+    
 
 
+}
 - (void)setListArray{
     [listOneMutableArray removeAllObjects];
     [listMutableArray addObjectsFromArray:listGDMutableArray];
@@ -1948,7 +2057,7 @@
     NSString *username = [defaults objectForKey:@"userName"];
     NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
     [sendDict setObject:uid forKey:@"uid"];
-    [sendDict setObject:username forKey:@"username"];
+    //[sendDict setObject:username forKey:@"username"];
     NSLog(@"%@",sendDict);
     [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/account" parameters:sendDict success:^(id responseObject) {
         
