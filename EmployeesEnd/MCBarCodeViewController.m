@@ -29,28 +29,6 @@
     self.navigationItem.title = @"扫条码";
     [self.view setBackgroundColor:[UIColor blackColor]];
     
-    //    readerView = [[ZBarReaderView alloc]initWithImageScanner:nil];
-    readerView = [[ZBarReaderView alloc]init];
-    [readerView setBackgroundColor:[UIColor blackColor]];
-    
-    [readerView setFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    readerView.readerDelegate = self;
-    //关闭闪光灯
-    readerView.torchMode = 0;
-    //    //扫描区域
-    //    CGRect scanMaskRect = CGRectMake(readerX, readerY, readerW, readerH) ;
-    //扫描区域计算
-    //    readerView.scanCrop = CGRectMake(0, 0, readerView.frame.size.width, readerView.frame.size.height);
-    readerView.scanCrop = [self getScanCrop:CGRectMake(20, 120, self.view.frame.size.width - 40, 130) readerViewBounds:readerView.bounds];
-    //处理模拟器
-    if (TARGET_IPHONE_SIMULATOR)
-    {
-        ZBarCameraSimulator *cameraSimulator
-        = [[ZBarCameraSimulator alloc]initWithViewController:self];
-        cameraSimulator.readerView = readerView;
-    }
-    [self.view addSubview:readerView];
-    
     
     //透明区域
     
@@ -88,7 +66,6 @@
     
     [self.view addSubview:lab_top2];
     
-    [readerView start];
     
     
 }
@@ -113,46 +90,5 @@
 }
 
 //获取返回值
-- (void)readerView:(ZBarReaderView *)readerView didReadSymbols:(ZBarSymbolSet *)symbols fromImage:(UIImage *)image
-{
-    NSString *codeRes = @"" ;
-    for (ZBarSymbol *symbol in symbols) {
-        codeRes = symbol.data ;
-        NSLog(@"%@", codeRes);
-        break;
-    }
-    
-    
-    if ([_delegate respondsToSelector:@selector(barCodeViewController:codeString:)])
-    {
-        [_delegate barCodeViewController:self codeString:codeRes];
-    }
-    
-    //    //判断是否包含 头'http:'
-    //    NSString *regex = @"http+:[^\\s]*";
-    //    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
-    //
-    //
-    //    if ([predicate evaluateWithObject:codeRes]) {
-    //        NSURL *url = [NSURL URLWithString:codeRes];
-    //        [[UIApplication sharedApplication]openURL:url];
-    //    }else{
-    //        UIAlertView * alert = [[UIAlertView alloc]initWithTitle:nil
-    //                                                        message:codeRes
-    //                                                       delegate:nil
-    //                                              cancelButtonTitle:@"Close"
-    //                                              otherButtonTitles:@"Ok", nil];
-    //        [alert show];
-    //
-    //    }
-    //
-    
-    
-    
-    //[self.readerView stop];
-    
-    //NSURL *url = [NSURL URLWithString:urlStr];
-    //[[UIApplication sharedApplication]openURL:url];
-}
 
 @end

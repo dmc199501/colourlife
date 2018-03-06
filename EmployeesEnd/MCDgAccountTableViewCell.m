@@ -71,6 +71,7 @@
         _mxButton.backgroundColor = [UIColor clearColor];
         [_mxButton setTitle:@"明细" forState:UIControlStateNormal];
         [_mxButton setTitleColor:[UIColor colorWithRed:112 / 255.0 green:112 / 255.0 blue:112/ 255.0 alpha:1] forState:UIControlStateNormal];
+        [_mxButton addTarget:self action:@selector(detailss:) forControlEvents:UIControlEventTouchUpInside];
         [_mxButton.titleLabel setFont:[UIFont systemFontOfSize:14]];
         
         UIImageView *next = [[UIImageView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH -20, BOTTOM_Y(lineView1)+17.5, 10, 15)];
@@ -94,16 +95,29 @@
         [_sourceLabel setFont:[UIFont systemFontOfSize:12]];
         [_sourceLabel setText:@"来源:"];
         
-        _mxButton = [[UIButton alloc]initWithFrame:CGRectMake(16, BOTTOM_Y(_sourceLabel)+30, SCREEN_WIDTH-32, 40)];
-        [self addSubview:_mxButton];
-        _mxButton.backgroundColor = [UIColor colorWithRed:204 / 255.0 green:204 / 255.0 blue:204/ 255.0 alpha:1];
-        [_mxButton setTitle:@"使用" forState:UIControlStateNormal];
-        [_mxButton setTitleColor:[UIColor colorWithRed:255 / 255.0 green:255 / 255.0 blue:255/ 255.0 alpha:1] forState:UIControlStateNormal];
-         [_mxButton.layer setCornerRadius:4];
-        [_mxButton.titleLabel setFont:[UIFont systemFontOfSize:15]];
+        _syButton = [[UIButton alloc]initWithFrame:CGRectMake(16, BOTTOM_Y(_sourceLabel)+30, SCREEN_WIDTH/2 -32, 40)];
+        [self addSubview:_syButton];
+       
+        [_syButton setTitle:@"转账" forState:UIControlStateNormal];
+        [_syButton setTitleColor:[UIColor colorWithRed:255 / 255.0 green:255 / 255.0 blue:255/ 255.0 alpha:1] forState:UIControlStateNormal];
+        [_syButton addTarget:self action:@selector(transfer:) forControlEvents:UIControlEventTouchUpInside];
+        
+         [_syButton.layer setCornerRadius:4];
+        [_syButton.titleLabel setFont:[UIFont systemFontOfSize:15]];
+        
+        _dhButton = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/2 +16, BOTTOM_Y(_sourceLabel)+30, SCREEN_WIDTH/2 -32, 40)];
+        [self addSubview:_dhButton];
+        _dhButton.backgroundColor = BLUK_COLOR_ZAN_MC;
+        [_dhButton addTarget:self action:@selector(dhAccount:) forControlEvents:UIControlEventTouchUpInside];
+        [_dhButton setTitle:@"兑换" forState:UIControlStateNormal];
+        [_dhButton setTitleColor:[UIColor colorWithRed:255 / 255.0 green:255 / 255.0 blue:255/ 255.0 alpha:1] forState:UIControlStateNormal];
+        
+        [_dhButton.layer setCornerRadius:4];
+        [_dhButton.titleLabel setFont:[UIFont systemFontOfSize:15]];
+
         
 
-        UIView *backview = [[UIView alloc]initWithFrame:CGRectMake(0, BOTTOM_Y(_mxButton)+17, SCREEN_WIDTH, 10)];
+        UIView *backview = [[UIView alloc]initWithFrame:CGRectMake(0, BOTTOM_Y(_dhButton)+17, SCREEN_WIDTH, 10)];
         backview.backgroundColor = [UIColor colorWithRed:242 / 255.0 green:242 / 255.0 blue:242/ 255.0 alpha:1];
         [self addSubview:backview];
         
@@ -112,6 +126,29 @@
     }
     return self;
 }
+- (void)detailss:(UIButton *)button{
+    
+    if ([_delegate respondsToSelector:@selector(MCDgAccountTableViewCell:exchange:)])
+    {
+        [_delegate MCDgAccountTableViewCell:self exchange:button];
+    }
+}
+
+- (void)transfer:(UIButton *)button{
+    
+    if ([_delegate respondsToSelector:@selector(MCDgAccountTableViewCell:transfer:)])
+    {
+        [_delegate MCDgAccountTableViewCell:self transfer:button];
+    }
+}
+- (void)dhAccount:(UIButton *)button{
+    
+    if ([_delegate respondsToSelector:@selector(MCDgAccountTableViewCell:dhAccount:)])
+    {
+        [_delegate MCDgAccountTableViewCell:self dhAccount:button];
+    }
+}
+
 
 - (void)awakeFromNib {
     [super awakeFromNib];

@@ -22,6 +22,7 @@
     
     // 1 .设置导航栏的主题
     UINavigationBar *navBar = [UINavigationBar appearance];
+    
     //（1）设置背景图片
     
     [navBar setBarTintColor:DARK_COLOER_ZZ];
@@ -31,6 +32,7 @@
     attrs[NSForegroundColorAttributeName] = [UIColor whiteColor];
     attrs[NSFontAttributeName] = [UIFont systemFontOfSize: 18];
     navBar.titleTextAttributes = attrs;
+    
     
     //----------------------------------------------------------------
     // 2 .设置导航条上面的导航按钮的主题（字体颜色， 字体大小）

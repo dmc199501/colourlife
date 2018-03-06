@@ -14,6 +14,8 @@
 @property (nonatomic, strong) UIImageView *arrowImageView;
 @property (nonatomic, strong) UIView *line2;
 @property (nonatomic, strong) UIButton *button;
+@property (nonatomic, strong) NSDictionary *dataDic;
+
 @property (nonatomic, strong) id delegate;
 @end
 @protocol MCMembersTableViewCellDelegate <NSObject>

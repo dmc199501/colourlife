@@ -219,7 +219,7 @@
     }
     
     if (listtwo.count>0) {
-        
+        [officeMutableArray setArray:listtwo];
         [self setOfficeArray:listtwo];
     }
     
@@ -340,10 +340,7 @@
 - (void)pushAdView:(UIButton *)button{
     NSLog(@"%@",activityMutableArray);
     NSString *urlString = [NSString stringWithFormat:@"%@",activityMutableArray[button.tag-1000][@"url"]];
-        MCWebViewController *webVC = [[MCWebViewController alloc]initWithUrl:[NSURL URLWithString:urlString] titleString:@""];
-    webVC.hidesBottomBarWhenPushed  = YES;
-    [self.navigationController pushViewController:webVC animated:YES];
-    
+    [self getoauth2:urlString andTitle:@"" anddeveloperCode:@"case"];
     
     
 }
@@ -684,11 +681,11 @@
 
 - (void)setOfficeArray:(NSArray *)array{
     
-    NSLog(@"%ld",array.count);
+   
     [officeButtonView removeFromSuperview];
     officeButtonView = [[UIView alloc]initWithFrame:CGRectMake(0, BOTTOM_Y(twoButtonView)+10, SCREEN_WIDTH, ((array.count-1)/4 * 90)+130)];
     officeButtonView.tag = 1202;
-    NSLog(@"%f---%f",self.view.frame.size.height,officeButtonView.frame.size.height);
+   
     ButtonView.contentSize = CGSizeMake(SCREEN_WIDTH,officeButtonView.frame.size.height +560*SCREEN_WIDTH/375);
     officeButtonView.backgroundColor = [UIColor whiteColor];
     [ButtonView addSubview:officeButtonView];
@@ -754,7 +751,7 @@
        line9.backgroundColor = [UIColor colorWithWhite:242/ 255.0 alpha:1];
        [officeButtonView addSubview:line9];
 
-        [serveButton addTarget:self action:@selector(clickButton:) forControlEvents:UIControlEventTouchUpInside];
+       [serveButton addTarget:self action:@selector(clickButton:) forControlEvents:UIControlEventTouchUpInside];
         
         
    }
@@ -833,33 +830,6 @@
 
 
 
-}
-- (void)getHomeButton{
-    
-    for (int i=0; i<officeMutableArray.count; i++) {
-        NSString *title = [officeMutableArray objectAtIndex:i][@"name"];
-        if ([title isEqualToString:@"邮件"]||[title isEqualToString:@"审批"]||[title isEqualToString:@"新e签到"]||[title isEqualToString:@"蜜蜂协同"]||[title isEqualToString:@"扫码开门"]||[title isEqualToString:@"公告通知"]) {
-            [twoMutableArray addObject:[officeMutableArray objectAtIndex:i]];
-            
-            
-            
-        }
-        if ([title isEqualToString:@"邮件"]||[title isEqualToString:@"审批"]||[title isEqualToString:@"新e签到"]) {
-            [oneMutableArray addObject:[officeMutableArray objectAtIndex:i]];
-            
-            
-            
-        }
-
-        
-        
-    }
-    NSLog(@"%@",twoMutableArray);
-    [officeMutableArray removeObjectsInArray:twoMutableArray];
-    
-    [self setOfficeArray:officeMutableArray];
-
-   
 }
 
 - (void)clickTWOButton:(UIButton *)senderButton
@@ -1084,12 +1054,11 @@
 }
 
 
-- (void)clickButton:(UIButton *)senderButton {
+- (void)clickButton:(UIButton *)senderButton{
    
-    NSDictionary *dics = [NSDictionary dictionary];
-   
-    
+   NSDictionary *dics = [NSDictionary dictionary];
     dics = [officeMutableArray objectAtIndex:senderButton.tag];
+    
     if ([dics[@"app_code"] isEqualToString:@"smkm"])
     {
         [self getInfoByOa];
@@ -1112,9 +1081,7 @@
         
         //读取数据
         
-        NSString *token  = [userDefaults objectForKey:@"token1.0"];
-        NSString *openID  = [userDefaults objectForKey:@"openID1.0"];
-        NSString *time  = [userDefaults objectForKey:@"oauth1time"];
+      
         
         NSString *clientCode = [NSString stringWithFormat:@"%@",dics[@"app_code"]];
         NSString *urloauth1 = [NSString stringWithFormat:@"%@",dics[@"url"]];

@@ -21,7 +21,7 @@
     
     IDTextField = [[UITextField alloc]initWithFrame:CGRectMake(15, 20, self.view.frame.size.width - 30, 40)];
     [self.view addSubview:IDTextField];
-    [IDTextField setPlaceholder:@"请输入当账号"];
+    [IDTextField setPlaceholder:@"请输入OA账号"];
     [IDTextField setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
     [IDTextField setBackgroundColor:[UIColor whiteColor]];
     [IDTextField setFont:[UIFont systemFontOfSize:14]];

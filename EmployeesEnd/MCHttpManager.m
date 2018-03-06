@@ -224,7 +224,7 @@
     [mgr.requestSerializer setValue:@"application/json"forHTTPHeaderField:@"Accept"];
     //[mgr.requestSerializer setValue:@"application/x-www-form-urlencoded"forHTTPHeaderField:@"Content-Type"];
     
-    
+     mgr.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/javascript",@"text/html",@"text/plain", nil];
     
     
     //    NSString *ts  = @"1494383844";

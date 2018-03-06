@@ -12,6 +12,8 @@
     
     UIScrollView *zzView;
     
+    UILabel *moneyLabel;
+    
 }
 
 @property(nonatomic,strong)NSDictionary *dataDic;

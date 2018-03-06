@@ -122,8 +122,14 @@
 }
 //UISearchBar作为tableview的头部
 -(UIView *)headView{
+    UISearchBar *searchBar = [[UISearchBar alloc]init];
+    if (iPhoneX) {
+         searchBar.frame=CGRectMake(0, 40, SCREEN_WIDTH, 44);
+    }else{
+        searchBar.frame=CGRectMake(0, 20, SCREEN_WIDTH, 44);
+        
+    }
     
-    UISearchBar *searchBar = [[UISearchBar alloc]initWithFrame:CGRectMake(0, 20, SCREEN_WIDTH, 44)];
     searchBar.keyboardType = UIKeyboardTypeWebSearch;
     searchBar.placeholder = @"请输入搜索关键字";
     searchBar.delegate = self;
@@ -262,8 +268,8 @@
             
             
         }else{
+            [SVProgressHUD showErrorWithStatus:[dicDictionary objectForKey:@"message"]];
             
-            [messagelistMutableArray setArray:dicDictionary[@"content"]];
             [_tableView reloadData];
 
         }
@@ -337,7 +343,7 @@
             
         }else{
             
-            [messagelistMutableArray setArray:dicDictionary[@"content"][@"data"]];
+           
             [_tableView reloadData];
             //[self setRedView];
             [_tableView.mj_header endRefreshing];

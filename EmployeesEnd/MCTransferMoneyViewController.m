@@ -14,6 +14,7 @@
 #import "TPPasswordTextView.h" 
 #import "MCAddCardViewController.h"
 #import "MCWebViewController.h"
+#import "MCBindingCZYViewController.h"
 @interface MCTransferMoneyViewController ()
 
 @end
@@ -63,23 +64,27 @@
         {
             if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
             {
-                
-                _datalistMutableArray  = dicDictionary[@"content"][@"activityInfo"];
-                self.balance = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"balance"]];
-                
-                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                
-                [userDefaults setObject:[NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"balance"]] forKey:@"fanpiao"];
-                [userDefaults synchronize];
-                
-                [self setUI];
+                if ([dicDictionary[@"content"][@"activityInfo"] isKindOfClass:[NSArray class]])
+                {
+                    _datalistMutableArray  = dicDictionary[@"content"][@"activityInfo"];
+                    self.balance = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"balance"]];
+                    
+                    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                    
+                    [userDefaults setObject:[NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"balance"]] forKey:@"fanpiao"];
+                    [userDefaults synchronize];
+                    
+                    [self setUI];
+
+                }
+               
                 
                 
             }
             
         }else{
             
-            //              [yue setAttributedText:[self changeLabelWithText:[NSString stringWithFormat:@" %@",@"0.00"]]];
+            
             [SVProgressHUD showErrorWithStatus:dicDictionary[@"message"]];
         }
         
@@ -97,6 +102,11 @@
     
     
     
+    
+}
+-(void)viewWillAppear:(BOOL)animated{
+
+    [super viewWillAppear:animated];
     
 }
 
@@ -161,7 +171,13 @@
 {
     return listMutableArray.count;
 }
-
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
+}
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    UIView *footView = [[UIView alloc]init];
+    return footView;
+}
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section;
 {
     return ((NSArray *)([listMutableArray objectAtIndex:section])).count;
@@ -251,7 +267,8 @@
                 }else if ([dicDictionary[@"content"][@"state"] isEqualToString:@"noBind"]){
                 //去绑定彩之云
                     
-                    [self getoauth1];
+                    MCBindingCZYViewController *bingVC = [[MCBindingCZYViewController alloc]init];
+                    [self.navigationController pushViewController:bingVC animated:YES];
                 
                 }
                 else if ([dicDictionary[@"content"][@"state"] isEqualToString:@"hasCard"]){
@@ -371,7 +388,10 @@
     _backView.backgroundColor = BLACKS_COLOR_ZZ;
     
     
-    _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-200)/2, SCREEN_WIDTH-80, 200)];
+    if (SCREEN_WIDTH == 320) {
+        _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-420)/2, SCREEN_WIDTH-80, 200)];
+    }else{
+        _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-320)/2, SCREEN_WIDTH-80, 200)];}
     _passWordView.backgroundColor = [UIColor whiteColor];
     //[_userPhotoImageView setUserInteractionEnabled:NO];
     [_passWordView.layer setCornerRadius:5];

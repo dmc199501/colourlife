@@ -15,5 +15,18 @@
 @property (nonatomic, strong) UILabel *moneyLabel;
 @property (nonatomic, strong) UILabel *sourceLabel;
 @property (nonatomic, strong) UIButton *mxButton;
+@property (nonatomic, strong) UIButton *syButton;
+@property (nonatomic, strong) UIButton *dhButton;
 @property (nonatomic, strong) UIButton *netButton;
+
+@property (nonatomic, strong) id delegate;
+@end
+@protocol MCDgAccountTableViewCellDelegate <NSObject>
+@optional
+- (void)MCDgAccountTableViewCell:(MCDgAccountTableViewCell *) MCDgAccountTableViewCell exchange:(UIButton *)Button ;
+
+- (void)MCDgAccountTableViewCell:(MCDgAccountTableViewCell *) MCDgAccountTableViewCell transfer:(UIButton *)Button ;
+
+- (void)MCDgAccountTableViewCell:(MCDgAccountTableViewCell *) MCDgAccountTableViewCell dhAccount:(UIButton *)Button ;
+
 @end

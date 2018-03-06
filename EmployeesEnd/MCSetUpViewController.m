@@ -22,7 +22,7 @@
     [super viewDidLoad];
     self.navigationItem.title = @"更多设置";
     
-    listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height  - 49) style:UITableViewStyleGrouped];
+    listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height  ) style:UITableViewStyleGrouped];
     [self.view addSubview:listTableView];
     [listTableView setBackgroundColor:[UIColor clearColor]];
     [listTableView setBackgroundView:nil];
@@ -69,6 +69,7 @@
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"key"];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"fpquanxian"];
      [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"contactList"];//收藏联系人列表
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"cardlist"];
     //[[NSUserDefaults standardUserDefaults] removeObjectForKey:@"fencheng"];
     [[NSUserDefaults standardUserDefaults] synchronize];
         MCLoginViewControler *LoginView = [[MCLoginViewControler alloc]init];
@@ -132,7 +133,9 @@
     return 0;
     
 }
-
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
+}
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
 {
     return 1;

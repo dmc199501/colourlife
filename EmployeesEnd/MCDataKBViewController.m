@@ -77,6 +77,7 @@
     areView.backgroundColor = [UIColor whiteColor];
 
      [self setButton];
+     [self setUI];
     
     // Do any additional setup after loading the view.
 }
@@ -84,10 +85,10 @@
 {
     
     // NSNotification 有三个属性，name, object, userInfo，其中最关键的object就是从第三个界面传来的数据。name就是通知事件的名字， userInfo一般是事件的信息。
-    NSLog(@"%@ === %@ === %@", noti.object, noti.userInfo, noti.name);
+   // NSLog(@"%@ === %@ === %@", noti.object, noti.userInfo, noti.name);
     
     JGlabel.text = [noti.object objectForKey:@"name"];
-    [self gtsArea:[noti.object objectForKey:@"id"]];
+    [self gtsArea:[noti.object objectForKey:@"orgUuid"]];
     
     
     NSDictionary *attrs = @{NSFontAttributeName : [UIFont boldSystemFontOfSize:15]};
@@ -167,7 +168,7 @@
 }
 
 - (void)setUI{
-
+    [listTableView removeFromSuperview];
     listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height-64-50) style:UITableViewStyleGrouped];
     [self.view addSubview:listTableView];
     [listTableView setBackgroundColor:[UIColor clearColor]];
@@ -181,7 +182,7 @@
 
 }
 - (void)gtsArea:(NSString *)oid{
-    [listTableView removeFromSuperview];
+//    [listTableView removeFromSuperview];
     
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
     NSString *orgToken = [defaults objectForKey:@"orgToken"];
@@ -195,10 +196,9 @@
     
     
     
-    NSLog(@"%@",sendDictionary);
     [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/resourcems/community/statistics" parameters:sendDictionary success:^(id responseObject) {
         NSDictionary *dicDictionary = responseObject;
-        NSLog(@"%@",dicDictionary);
+        NSLog(@"经营类%@",dicDictionary);
        
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
@@ -217,8 +217,9 @@
             
             
         }else{
-            
-            
+           
+              [self gtsAreaOne:oid];
+            [SVProgressHUD showErrorWithStatus:[dicDictionary objectForKey:@"message"]];
                    }
         
         
@@ -239,7 +240,7 @@
 
 
 - (void)gtsAreaOne:(NSString *)oid{
-    [listTableView removeFromSuperview];
+   
     
     
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
@@ -275,7 +276,7 @@
     
     [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/xsfxt/report/charge_receipt" parameters:sendDictionary success:^(id responseObject) {
         NSDictionary *dicDictionary = responseObject;
-        NSLog(@"%@",dicDictionary);
+        NSLog(@"经营%@",dicDictionary);
         
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
@@ -285,7 +286,6 @@
                 
                 
                 self.datadicTwo = dicDictionary[@"content"];
-              
                 [self setUI];
                 [listTableView reloadData];
                 
@@ -300,7 +300,7 @@
             
         }else{
             
-             [self setUI];
+            
             [SVProgressHUD showErrorWithStatus:[dicDictionary objectForKey:@"message"]];
             
             
@@ -325,7 +325,7 @@
     OrganizationalVC.delegate = self;
     OrganizationalVC.titleString = self.name;
     OrganizationalVC.type = 12;
-    
+    OrganizationalVC.orgType = @"彩生活集团";
 //    OrganizationalVC.IDString = [[MCPublicDataSingleton sharePublicDataSingleton].userDictionary objectForKey:@"orgId"];
     OrganizationalVC.IDString = @"9959f117-df60-4d1b-a354-776c20ffb8c7";
 
@@ -524,7 +524,13 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"dateTime"]];
+                            if (self.datadicTwo[@"dateTime"]) {
+                                 label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"dateTime"]];
+                            }else{
+                                
+                                 label.text =@"0";
+                            }
+                           
                             
                             
                             
@@ -540,7 +546,14 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"receivableValue"]];
+                            
+                            if (self.datadicTwo[@"receivableValue"]) {
+                                label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"receivableValue"]];
+                            }else{
+                                
+                                label.text =@"0";
+                            }
+                            
                             
                             
                             
@@ -557,7 +570,15 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"chargeValue"]];
+                            
+                            if (self.datadicTwo[@"chargeValue"]) {
+                                label.text = [NSString stringWithFormat:@"%@",self.datadicTwo[@"chargeValue"]];
+                            }else{
+                                
+                                label.text =@"0";
+                            }
+
+                            
                             
                         }
                             break;
@@ -634,8 +655,13 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                           
-                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"area"]];
+                            if (self.datadic[@"area"]) {
+                                label.text = [NSString stringWithFormat:@"%@",self.datadic[@"area"]];
+                            }else{
+                                
+                                label.text =@"0";
+                            }
+                            
                             
                             
                             
@@ -652,7 +678,13 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"count"]];
+                            if (self.datadic[@"count"]) {
+                                label.text = [NSString stringWithFormat:@"%@",self.datadic[@"count"]];
+                            }else{
+                                
+                                label.text =@"0";
+                            }
+                            
                             
                         }
                             break;
@@ -664,7 +696,19 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"upParkingSpace"]];
+                            
+                            if (self.datadic[@"upParkingSpace"]) {
+                                 int Space = [self.datadic[@"upParkingSpace"] intValue] + [self.datadic[@"midParkingSpace"] intValue] +[self.datadic[@"downParkingSpace"] intValue];
+                                 label.text = [NSString stringWithFormat:@"%d",Space];
+                            }else{
+                                
+                                label.text =@"0";
+                            }
+
+                           
+                            
+                            
+                           
                             
                             
                         }
@@ -688,7 +732,13 @@
                             label.font = [UIFont systemFontOfSize:13];
                             [label setTextColor:GRAY_COLOR_ZZ];
                             [cell addSubview:label];
-                            label.text = [NSString stringWithFormat:@"%@",self.datadic[@"count"]];
+                            if (self.datadic[@"count"]) {
+                                label.text = [NSString stringWithFormat:@"%@",self.datadic[@"count"]];
+                            }else{
+                            
+                            label.text = @"0";
+                            }
+                            
                         }
                             break;
                             

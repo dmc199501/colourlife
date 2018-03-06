@@ -71,18 +71,16 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
    
-    
+    [self getTs];
     [self deviceIPAdress];
     [self setAlias];
+    
     if ([MCPublicDataSingleton sharePublicDataSingleton].isRequestVersion == 0) {
         [self VersionUpdate];
     }
    
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(noti1) name:@"pushList" object:nil];
-//    NSNotificationCenter *notiCenter = [NSNotificationCenter defaultCenter];
-//    
-//    [notiCenter addObserver:self selector:@selector(receiveNotification:) name:@"首页列表推送" object:nil];
-   
+    
     [listGDMutableArray addObject:@{@"imageName":@"通知公告",@"title":@"暂无新消息",@"comefrom":@"公告通知",@"owner_name":@"暂无",@"client_code":@"ggtz",@"homePushTime":@"2000-06-10 17:57:11",@"notread":@"0"}];
      [listGDMutableArray addObject:@{@"imageName":@"邮件",@"title":@"暂无新消息",@"comefrom":@"新邮件",@"owner_name":@"暂无",@"client_code":@"yj",@"homePushTime":@"2000-06-10 17:57:11",@"notread":@"0"}];
     [listGDMutableArray addObject:@{@"imageName":@"审批",@"title":@"暂无新消息",@"comefrom":@"蜜蜂协同",@"owner_name":@"暂无",@"client_code":@"case",@"homePushTime":@"2000-06-10 17:57:11",@"notread":@"0"}];
@@ -108,7 +106,7 @@
     self.navigationController.delegate = self;
     [self setUI];
     [self getOfficeApplicationList];
-    NSLog(@"%@",userDic);
+   
     if (userDic) {
         [self setUserHome];
     }else{
@@ -154,7 +152,7 @@
         //别名
         __autoreleasing NSString *alias ;
         alias = [NSString stringWithFormat:@"cgj_%@",name];
-        NSLog(@"%@",alias);
+        
         [self analyseInput:&alias tags:&tags];
         
         [JPUSHService setTags:tags alias:alias callbackSelector:@selector(tagsAliasCallback:tags:alias:) object:self];
@@ -232,7 +230,7 @@
         NSString *fanpiao  = [userDefaults objectForKey:@"fanpiao"];
         NSString *fencheng  = [userDefaults objectForKey:@"fencheng"];
         NSString *isClean  = [userDefaults objectForKey:@"isClean"];
-   
+        NSString *orgToken = [userDefaults objectForKey:@"orgToken"];
     if ([isClean isEqualToString:@"yes"]) {
         
         
@@ -253,7 +251,16 @@
     }
     
     
-    [self getacount];//分账
+   
+    if (orgToken.length>0) {
+        [self getacount];//分账
+       
+    }else{
+    
+        [self getAuthApp];
+    
+    }
+    
     
     //[self getHongbao];
     
@@ -316,15 +323,17 @@
     
     
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSString *orgToken = [defaults objectForKey:@"orgToken"];
+    
     
     NSString *username = [defaults objectForKey:@"userName"];
     NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
-    [sendDictionary setValue:@"1521ac83521b8063e7a9a49dc22e79b0" forKey:@"access_token"];
-    [sendDictionary setValue:@2 forKey:@"target_type"];
-    [sendDictionary setValue:username forKey:@"target"];
+    [sendDictionary setValue:orgToken forKey:@"access_token"];
+    [sendDictionary setValue:@2 forKey:@"split_type"];
+    [sendDictionary setValue:username forKey:@"split_target"];
     
     
-    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/splitdivide/api/account" parameters:sendDictionary success:^(id responseObject) {
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/split/api/account" parameters:sendDictionary success:^(id responseObject) {
         [ActivityFZ stopAnimating]; // 结束旋转
         [ActivityFZ setHidesWhenStopped:YES]; //当旋转结束时隐藏
         NSDictionary *dicDictionary = responseObject;
@@ -335,7 +344,7 @@
             {
                 
                 
-                [accountLaber setText:[NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"total_balance"]]];
+                [accountLaber setText:[NSString stringWithFormat:@"%.2f",[dicDictionary[@"content"][@"total_balance"] floatValue]]];
                 self.fzstring = dicDictionary[@"content"][@"total_balance"];
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
                 
@@ -454,13 +463,21 @@
 
 - (void)gtsArea{
     
+    
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
     NSString *orgToken = [defaults objectForKey:@"orgToken"];
     NSString *corpID = [defaults objectForKey:@"corpId"];
 NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
+    if ([corpID isEqualToString:@"a8c58297436f433787725a94f780a3c9"]) {
+        
+        [sendDictionary setValue:orgToken forKey:@"token"];
+        [sendDictionary setValue:@"0" forKey:@"orgUuid"];
+        [sendDictionary setValue:@"1" forKey:@"isAll"];
+    }else{
     [sendDictionary setValue:@"9959f117-df60-4d1b-a354-776c20ffb8c7" forKey:@"orgUuid"];
     [sendDictionary setValue:orgToken forKey:@"token"];
-     [sendDictionary setValue:corpID forKey:@"corpId"];
+        [sendDictionary setValue:corpID forKey:@"corpId"];
+    }
 
     
     
@@ -480,8 +497,18 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
             
             if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
             {
-                
-                NSString *area = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"area"]];
+                /*在管面积*/
+
+                NSString *area = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"coveredArea"]];
+                /*合同面积*/
+                NSString *contractArea = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"contractArea"]];
+                /*已交付面积*/
+                NSString *delivered = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"delivered"]];
+                /*撤场面积*/
+                NSString *ccArea = [NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"撤场数据"][@"coveredArea"]];
+                float deliArea = [contractArea floatValue] -[delivered floatValue];
+                float Area = [area floatValue]+[ccArea floatValue]+deliArea ;
+                NSString *AreaString = [NSString stringWithFormat:@"%f",Area];
                 
                 self.areaDic = dicDictionary[@"content"];
                 
@@ -489,14 +516,14 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
                 
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
                 
-                [userDefaults setObject:[NSString stringWithFormat:@"%@",area] forKey:@"xiaoqu"];
+                [userDefaults setObject:[NSString stringWithFormat:@"%@",AreaString] forKey:@"xiaoqu"];
                 [userDefaults setObject:[NSString stringWithFormat:@"%@",district] forKey:@"mianji"];
                 [userDefaults synchronize];
                 
                 [districtlLaber setText:[NSString stringWithFormat:@"%@",district]];
                
                 
-                [areaLaber setText:[NSString stringWithFormat:@"%.2f",[area floatValue] /10000]];
+                [areaLaber setText:[NSString stringWithFormat:@"%.2f",[AreaString floatValue] /10000]];
                 
             }
             
@@ -778,7 +805,13 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     
     
     self.view.backgroundColor = [UIColor colorWithRed:245 / 255.0 green:245 / 255.0 blue:245/ 255.0 alpha:1];
-    backView = [[DDCoverView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 64)];
+    if (iPhoneX) {
+        backView = [[DDCoverView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 84)];
+    }else{
+         backView = [[DDCoverView alloc]initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 64)];
+        
+    }
+    
     backView.backgroundColor = [UIColor colorWithRed:44 / 255.0 green:54 / 255.0 blue:64/ 255.0 alpha:1];
     [self.view addSubview:backView];
     
@@ -789,13 +822,25 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
    
     
     
-    UIButton *scanButton = [[UIButton alloc]initWithFrame:CGRectMake(10, 30, 25, 25)];
+    UIButton *scanButton = [[UIButton alloc]init];
+    if (iPhoneX) {
+        scanButton.frame =CGRectMake(10, 50, 25, 25);
+    }else{
+        
+        scanButton.frame =CGRectMake(10, 30, 25, 25);
+    }
     [backView addSubview:scanButton];
     [scanButton setImage:[UIImage imageNamed:@"code_home"] forState:UIControlStateNormal];
     scanButton.backgroundColor = [UIColor clearColor];
     [scanButton addTarget:self action:@selector(shaerCode) forControlEvents:UIControlEventTouchUpInside];
     
-    UIButton *addButton = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH -35, 30, 25, 25)];
+    UIButton *addButton = [[UIButton alloc]init];
+    if (iPhoneX) {
+        addButton.frame =CGRectMake(SCREEN_WIDTH -35, 50, 25, 25);
+    }else{
+        
+        addButton.frame =CGRectMake(SCREEN_WIDTH -35, 30, 25, 25);
+    }
     [backView addSubview:addButton];
     [addButton setImage:[UIImage imageNamed:@"jiahao"] forState:UIControlStateNormal];
     addButton.backgroundColor = [UIColor clearColor];
@@ -805,7 +850,14 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     headerView.backgroundColor = [UIColor clearColor];
     //[self.view addSubview:headerView];
     
-    UIButton * barButton = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH -70, 30, 25, 25)];
+    UIButton * barButton = [[UIButton alloc]init];
+    if (iPhoneX) {
+        barButton.frame = CGRectMake(SCREEN_WIDTH -70, 50, 25, 25);
+    }else{
+        
+         barButton.frame = CGRectMake(SCREEN_WIDTH -70, 30, 25, 25);
+        
+    }
     [barButton setImage:[UIImage imageNamed:@"搜索"] forState:UIControlStateNormal];
     [barButton addTarget:self action:@selector(sousuo) forControlEvents:UIControlEventTouchUpInside];
     [backView addSubview:barButton];
@@ -815,8 +867,13 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     [homeBack setImage:[UIImage imageNamed:@"bg_lanse"]];
     [headerView addSubview:homeBack];
     homeBack.userInteractionEnabled = YES;
-    
-    labelHome = [[UILabel alloc]initWithFrame:CGRectMake(0, 34, SCREEN_WIDTH, 20)];
+    if (iPhoneX) {
+         labelHome = [[UILabel alloc]initWithFrame:CGRectMake(0, 54, SCREEN_WIDTH, 20)];
+    }else{
+        
+         labelHome = [[UILabel alloc]initWithFrame:CGRectMake(0, 34, SCREEN_WIDTH, 20)];
+    }
+   
     labelHome.textAlignment = NSTextAlignmentCenter;
     labelHome.font = [UIFont systemFontOfSize:15];
     [labelHome setTextColor:[UIColor whiteColor]];
@@ -1030,7 +1087,7 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     
 //即时分账
     UILabel *account = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3*2 +20, 105, SCREEN_WIDTH/3 -20, 20)];
-    account.text = @"即时分成";
+    account.text = @"即时分配";
     account.textColor = [UIColor colorWithRed:255 / 255.0 green:255 / 255.0 blue:255/ 255.0 alpha:1];
     account.backgroundColor = [UIColor clearColor];
     account.textAlignment = NSTextAlignmentLeft;
@@ -1038,7 +1095,7 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     [homeBack addSubview:account];
     
     UILabel *accountUnit = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3*2 +20, 130, SCREEN_WIDTH/3, 20)];
-    accountUnit.text = @"分成金额";
+    accountUnit.text = @"分配金额";
     accountUnit.textColor = [UIColor colorWithRed:255 / 255.0 green:255 / 255.0 blue:255/ 255.0 alpha:0.5];
     accountUnit.backgroundColor = [UIColor clearColor];
     accountUnit.textAlignment = NSTextAlignmentLeft;
@@ -1093,8 +1150,15 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
         
         
     }
-
-    listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0,64, self.view.frame.size.width, self.view.frame.size.height-50-64) style:UITableViewStyleGrouped];
+   
+   
+   
+    if (iPhoneX) {
+         listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0,84, self.view.frame.size.width, self.view.frame.size.height-50-84) style:UITableViewStyleGrouped];
+    }else{
+         listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0,64, self.view.frame.size.width, self.view.frame.size.height-50-64) style:UITableViewStyleGrouped];
+        
+    }
     [self.view addSubview:listTableView];
     [listTableView setBackgroundColor:[UIColor whiteColor]];
     [listTableView setBackgroundView:nil];
@@ -1170,14 +1234,14 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     NSString *  signature = [MyMD5 md5:singe];//签名=( APPID +ts +appSecret)md5
     [dic setValue:signature forKey:@"signature"];
     [dic setValue:ts forKey:@"timestamp"];//时间戳
-    NSLog(@"%@",dic);
+    
     
        
     
     [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/authms/auth/app" parameters:dic success:^(id responseObject) {
         
         NSDictionary *dicDictionary = responseObject;
-        NSLog(@"%@",dicDictionary);
+        
         
         if ([dicDictionary[@"code"] integerValue] == 0 &&[dicDictionary[@"content"] isKindOfClass:[NSDictionary class]] )
         {
@@ -1186,9 +1250,9 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
             [defaults setObject:[dicDictionary[@"content"] objectForKey:@"accessToken"] forKey:@"orgToken"];
             
             [defaults synchronize];
-             [self gtsArea];//获取资源数据
+            [self gtsArea];//获取资源数据
             [self getOrgidType];//获取当前人的组织架构类型
-            
+            [self getacount];
             
             
             
@@ -1249,7 +1313,7 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
             
                  type = [NSString stringWithFormat:@"%@",[[dicDictionary objectForKey:@"content"] objectForKey:@"orgType"]];
             }
-           
+            NSLog(@"%@",type);
             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
             [defaults setObject:type forKey:@"orgtype"];
             
@@ -1439,7 +1503,14 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     
     if (_isOpen == 0) {
         _isOpen = 1;
-        shopButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 64, SCREEN_WIDTH, SCREEN_HEIGHT)];
+        if (iPhoneX) {
+            shopButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 84, SCREEN_WIDTH, SCREEN_HEIGHT)];
+        }else{
+            
+             shopButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 64, SCREEN_WIDTH, SCREEN_HEIGHT)];
+            
+        }
+        
         shopButton.backgroundColor = [UIColor colorWithRed:102 / 255.0 green:102 / 255.0 blue:102 / 255.0 alpha:0.3];
         [self.tabBarController.view addSubview:shopButton];
         [shopButton addTarget:self action:@selector(removeButton) forControlEvents:UIControlEventTouchUpInside];
@@ -1827,6 +1898,7 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
 {
     return 10;
 }
+
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
     
     UIView *bgView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, 10)];
@@ -2110,7 +2182,13 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     NSDictionary *attrs = @{NSFontAttributeName : [UIFont boldSystemFontOfSize:15]};
     CGSize size=[labelHome.text sizeWithAttributes:attrs];
     
-    imageHome = [[UIImageView alloc]initWithFrame:CGRectMake((SCREEN_WIDTH/2 -size.width/2) -20, 36, 15, 15)];
+    
+    if (iPhoneX) {
+        imageHome = [[UIImageView alloc]initWithFrame:CGRectMake((SCREEN_WIDTH/2 -size.width/2) -20, 56, 15, 15)];
+    }else{
+      imageHome = [[UIImageView alloc]initWithFrame:CGRectMake((SCREEN_WIDTH/2 -size.width/2) -20, 36, 15, 15)];
+        
+    }
     [imageHome setImage:[UIImage imageNamed:@"coordinates_fillmap"]];
     [backView addSubview:imageHome];
 
@@ -2124,12 +2202,12 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     NSString *username = [defaults objectForKey:@"userName"];
     NSString *password = [defaults objectForKey:@"passWordMI"];
     
-    NSLog(@"%@",username);
+   
     NSDictionary *sendDict = @{
                                @"username":username,
                                @"password":password
                                };
-    NSLog(@"%@",sendDict);
+   
     [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/czywg/employee/login" parameters:sendDict success:^(id responseObject) {
         
         NSDictionary *dicDictionary = responseObject;
@@ -2176,14 +2254,11 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     NSString *key = [defaults objectForKey:@"key"];
     NSString *secret = [defaults objectForKey:@"secret"];
     
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
     
-    NSDictionary *sendDict = @{
-                               
-                               @"key":key,
-                               @"secret":secret
-                               };
-    
-    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/hongbao/getBalance" parameters:sendDict success:^(id responseObject) {
+    [dic setValue:key forKey:@"key"];
+    [dic setValue:secret forKey:@"secret"];
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/hongbao/getBalance" parameters:dic success:^(id responseObject) {
         [Activitymeal stopAnimating]; // 结束旋转
         [Activitymeal setHidesWhenStopped:YES]; //当旋转结束时隐藏
         NSDictionary *dicDictionary = responseObject;
@@ -2216,11 +2291,7 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
         
         
         NSLog(@"****%@", error);
-        NSString *str = [NSString stringWithFormat:@"%@",error];
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"" message:str delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"去更新", nil];
-        alert.tag = 1001;
-        [alert show];
-
+       
         
         
     }];
@@ -2237,13 +2308,11 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     NSString *secret = [defaults objectForKey:@"secret"];
     
     
-    NSDictionary *sendDict = @{
-                               
-                               @"key":key,
-                               @"secret":secret
-                               };
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
     
-    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/hongbao/getHBUserList" parameters:sendDict success:^(id responseObject) {
+    [dic setValue:key forKey:@"key"];
+    [dic setValue:secret forKey:@"secret"];
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/hongbao/getHBUserList" parameters:dic success:^(id responseObject) {
        
         NSDictionary *dicDictionary = responseObject;
         NSLog(@"%@",dicDictionary);
@@ -2329,8 +2398,8 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
             
         }else{
             
+            [listTableView.mj_header endRefreshing];
             [listMutableArray removeAllObjects];
-            
             [self setListArray];
             
         
@@ -2454,6 +2523,40 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
 
 
 }
+
+- (void)getTs{
+    
+    
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/timestamp" parameters:nil success:^(id responseObject) {
+        
+        NSDictionary *dicDictionary = responseObject;
+        NSLog(@"%@",dicDictionary);
+        if ([dicDictionary[@"code"] integerValue] == 0 )
+        {
+            
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            
+            [defaults setObject:dicDictionary[@"content"] forKey:@"ts"];
+            
+            
+        }
+        
+        
+        NSLog(@"%@",dicDictionary);
+        
+        
+        
+        
+        
+    } failure:^(NSError *error) {
+        
+        
+        
+        
+    }];
+    
+    
+}
 - (void)deviceIPAdress {
     NSString *address = @"an error occurred when obtaining ip address";
     struct ifaddrs *interfaces = NULL;
@@ -2501,46 +2604,50 @@ NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
          
          if ([dicDictionary[@"code"] integerValue] == 0 )
          {
-             
-             NSString *result = dicDictionary[@"content"][@"result"];
-             _douwnUrl = dicDictionary[@"content"][@"info"][0][@"download_url"];
-             
-           
-             NSString *string = @"";
-             
-             
-             
-             if ([result integerValue] ==1) {
+             if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]]) {
+                 
+                 NSString *result = dicDictionary[@"content"][@"result"];
+                 _douwnUrl = dicDictionary[@"content"][@"info"][0][@"download_url"];
+                 
+                 
+                 NSString *string = @"";
                  
                  
                  
-
-             }
-             if ([result integerValue] ==-1) {
-                  NSArray *array = dicDictionary[@"content"][@"info"][0][@"func"];
-                 if (array.count>=1) {
-                     string = [array componentsJoinedByString:@","];
+                 if ([result integerValue] ==1) {
+                     
+                     
+                     
+                     
+                 }
+                 if ([result integerValue] ==-1) {
+                     NSArray *array = dicDictionary[@"content"][@"info"][0][@"func"];
+                     if (array.count>=1) {
+                         string = [array componentsJoinedByString:@","];
+                     }
+                     
+                     UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"检查更新:彩管家" message:string delegate:self cancelButtonTitle:@"去更新" otherButtonTitles:nil, nil];
+                     alert.tag = 1002;
+                     [alert show];
+                     
+                     
+                 }
+                 if ([result integerValue] ==0 ) {
+                     NSArray *array = dicDictionary[@"content"][@"info"][0][@"func"];
+                     if (array.count>=1) {
+                         string = [array componentsJoinedByString:@","];
+                     }
+                     NSString *titelStr = @"检查更新:彩管家";
+                     NSString *messageStr = @"发现新版本是否更新";
+                     UIAlertView *alert = [[UIAlertView alloc]initWithTitle:titelStr message:string delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"去更新", nil];
+                     alert.tag = 1001;
+                     [alert show];
+                     
                  }
 
-                 UIAlertView *alert=[[UIAlertView alloc]initWithTitle:@"检查更新:彩管家" message:string delegate:self cancelButtonTitle:@"去更新" otherButtonTitles:nil, nil];
-                 alert.tag = 1002;
-                 [alert show];
-
                  
              }
-             if ([result integerValue] ==0 ) {
-                 NSArray *array = dicDictionary[@"content"][@"info"][0][@"func"];
-                 if (array.count>=1) {
-                     string = [array componentsJoinedByString:@","];
-                 }
-                 NSString *titelStr = @"检查更新:彩管家";
-                 NSString *messageStr = @"发现新版本是否更新";
-                 UIAlertView *alert = [[UIAlertView alloc]initWithTitle:titelStr message:string delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"去更新", nil];
-                 alert.tag = 1001;
-                 [alert show];
-                 
-             }
-
+             
              
              
          }

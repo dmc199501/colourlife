@@ -33,9 +33,10 @@
         
         fgView.backgroundColor = GRAY_LIGHTS_COLOR_ZZ;
         [self addSubview:fgView];
-        _line2 = [[UIView alloc]initWithFrame:CGRectMake(10, 49, SCREEN_WIDTH-10, 1)];
-        _line2.backgroundColor = GRAY_LIGHTS_COLOR_ZZ;
-        [self addSubview:_line2];
+        
+//        _line2 = [[UIView alloc]initWithFrame:CGRectMake(10, 49, SCREEN_WIDTH-10, 1)];
+//        _line2.backgroundColor = GRAY_LIGHTS_COLOR_ZZ;
+//        [self addSubview:_line2];
         
         
         _button = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH- 50, 15, 120, 20)];
@@ -43,12 +44,23 @@
         [_button.titleLabel setFont:[UIFont systemFontOfSize:15]];
         [_button setTitleColor:GRAY_COLOR_BACK_ZZ forState:UIControlStateNormal];
         [self addSubview:_button];
+        
         [_button addTarget:self action:@selector(deleteMembers:) forControlEvents:UIControlEventTouchUpInside];
         
         
     }
     
     return self;
+}
+-(void)setDataDic:(NSDictionary *)dataDic{
+    _dataDic = dataDic;
+    NSString *type2 = [NSString stringWithFormat:@"%@",[_dataDic objectForKey:@"orgType"]];
+    if ([type2 isEqualToString:@"小区"]) {
+        
+        self.button.backgroundColor = [UIColor whiteColor];
+    }
+
+
 }
 - (void)deleteMembers:(UIButton *) button{
     

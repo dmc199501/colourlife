@@ -20,5 +20,6 @@
 @property (nonatomic, strong)UITextField *moneyTextField;//
 @property (nonatomic,strong)NSString *type;
 @property (nonatomic,strong)NSString *balance;
+@property (nonatomic,strong)NSString *OASting;
 
 @end

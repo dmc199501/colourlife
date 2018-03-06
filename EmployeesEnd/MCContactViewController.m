@@ -10,6 +10,7 @@
 #import "MCWebViewController.h"
 #import "UIBarButtonItem+Item.h"
 #import <MessageUI/MessageUI.h>
+#import "MCRedEnvelopesViewController.h"
 @interface MCContactViewController ()<UINavigationControllerDelegate,MFMessageComposeViewControllerDelegate>
 @property(nonatomic,strong)NSDictionary *dataDic;
 @end
@@ -228,7 +229,7 @@
     mailView.backgroundColor = [UIColor whiteColor];
    
     
-    UILabel *mailLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 10, SCREEN_WIDTH/2, 20)];
+    UILabel *mailLabel = [[UILabel alloc]initWithFrame:CGRectMake(0, 10, SCREEN_WIDTH/3, 20)];
     [mailLabel setText:[NSString stringWithFormat:@"%@",@"发邮件"]];
     [mailView addSubview:mailLabel];
     [mailLabel setTextColor:[UIColor blackColor]];
@@ -236,21 +237,25 @@
     mailLabel.textAlignment = NSTextAlignmentCenter;
 
     
-    UIImageView *mailImage = [[UIImageView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/4 -40 , 12, 15, 15)];
+    UIImageView *mailImage = [[UIImageView alloc]initWithFrame:CGRectMake(15 , 12, 15, 15)];
     [mailImage setImage:[UIImage imageNamed:@"youjian_mp"]];
     [mailView addSubview:mailImage];
     
-    UIButton *mailButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH/2, 40)];
+    UIButton *mailButton = [[UIButton alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH/3, 40)];
     [mailView addSubview:mailButton];
     [mailButton addTarget:self action:@selector(GOmail) forControlEvents:UIControlEventTouchUpInside];
     
     
-    UIView *line2 = [[UIView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/2, 12.5, 1, 15)];
+    UIView *line2 = [[UIView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3, 12.5, 1, 15)];
     [mailView addSubview:line2];
     line2.backgroundColor =  GRAY_COLOR_BACK_ZZ;
     
+    UIView *line3 = [[UIView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3*2, 12.5, 1, 15)];
+    [mailView addSubview:line3];
+    line3.backgroundColor =  GRAY_COLOR_BACK_ZZ;
     
-    UILabel *smsLabel = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/2, 10, SCREEN_WIDTH/2, 20)];
+    
+    UILabel *smsLabel = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3, 10, SCREEN_WIDTH/3, 20)];
     [smsLabel setText:[NSString stringWithFormat:@"%@",@"发短信"]];
     [mailView addSubview:smsLabel];
     [smsLabel setTextColor:[UIColor blackColor]];
@@ -258,13 +263,31 @@
     smsLabel.textAlignment = NSTextAlignmentCenter;
     
     
-    UIImageView *smsImage = [[UIImageView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/2 + SCREEN_WIDTH/4  -40 , 12, 15, 15)];
+    UIImageView *smsImage = [[UIImageView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3 + 15 , 12, 15, 15)];
     [smsImage setImage:[UIImage imageNamed:@"duanxin_mp"]];
     [mailView addSubview:smsImage];
     
-    UIButton *smsButton = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/2, 0, SCREEN_WIDTH/2, 40)];
+    UIButton *smsButton = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3, 0, SCREEN_WIDTH/3, 40)];
     [mailView addSubview:smsButton];
     [smsButton addTarget:self action:@selector(GOsms) forControlEvents:UIControlEventTouchUpInside];
+    
+    UILabel *fpzzLabel = [[UILabel alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3*2, 10, SCREEN_WIDTH/3, 20)];
+    [fpzzLabel setText:[NSString stringWithFormat:@"%@",@"转账"]];
+    [mailView addSubview:fpzzLabel];
+    [fpzzLabel setTextColor:[UIColor blackColor]];
+    fpzzLabel.font = [UIFont systemFontOfSize:15];
+    fpzzLabel.textAlignment = NSTextAlignmentCenter;
+    
+    
+    UIImageView *fpzzImage = [[UIImageView alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3*2  + 15 , 12, 15, 15)];
+    [fpzzImage setImage:[UIImage imageNamed:@"zhuanzhang"]];
+    [mailView addSubview:fpzzImage];
+    
+    UIButton *fpzzButton = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH/3*2 , 0, SCREEN_WIDTH/3, 40)];
+    [mailView addSubview:fpzzButton];
+    [fpzzButton addTarget:self action:@selector(getIsSetPassWord) forControlEvents:UIControlEventTouchUpInside];
+    
+
     
     
     
@@ -286,6 +309,63 @@
 
 
 }
+
+
+- (void)getIsSetPassWord{
+    
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSString *key = [defaults objectForKey:@"key"];
+    NSString *secret = [defaults objectForKey:@"secret"];
+    
+    
+    
+    NSDictionary *sendDict = @{
+                               @"position":@0,
+                               @"key":key,
+                               @"secret":secret
+                               };
+    
+    [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/hongbao/isSetPwd" parameters:sendDict success:^(id responseObject) {
+        [SVProgressHUD dismiss];
+        NSDictionary *dicDictionary = responseObject;
+        NSLog(@"%@",dicDictionary);
+        if ([dicDictionary[@"code"] integerValue] == 0 )
+        {
+            if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
+            {
+                
+                
+                if ([dicDictionary[@"content"][@"state"] isEqualToString:@"hasPwd"]) {
+                    //有密码
+                    MCRedEnvelopesViewController *redVC = [[MCRedEnvelopesViewController alloc]init];
+                    redVC.OASting = _dataDic[@"username"];
+                    [self.navigationController pushViewController:redVC animated:YES];
+                                        
+                }else{
+                
+                    UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"" message:@"您还未设置支付密码,请前往我的饭票-转出与提现页面设置支付密码" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"OK", nil];
+                    
+                    [alert show];
+                }
+            }
+        }
+        
+        
+        
+    } failure:^(NSError *error) {
+        
+        
+        NSLog(@"****%@", error);
+        [SVProgressHUD dismiss];
+        
+        
+    }];
+    
+    
+    
+    
+}
+
 - (void)GOsms{
 
 //   [[UIApplication sharedApplication]openURL:[NSURL URLWithString:[NSString stringWithFormat:@"sms://%@",_dataDic[@"mobile"]]]];

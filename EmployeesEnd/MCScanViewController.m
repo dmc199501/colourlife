@@ -40,29 +40,7 @@
     [self.view setBackgroundColor:[UIColor blackColor]];
     
     //    readerView = [[ZBarReaderView alloc]initWithImageScanner:nil];
-    readerView = [[ZBarReaderView alloc]init];
-    [readerView setBackgroundColor:[UIColor blackColor]];
-    
-    [readerView setFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height)];
-    readerView.readerDelegate = self;
-    //关闭闪光灯
-    readerView.torchMode = 0;
-    //    //扫描区域
-    //    CGRect scanMaskRect = CGRectMake(readerX, readerY, readerW, readerH) ;
-    //扫描区域计算
-    //    readerView.scanCrop = CGRectMake(0, 0, readerView.frame.size.width, readerView.frame.size.height);
-    readerView.scanCrop = [self getScanCrop:CGRectMake((self.view.frame.size.width - 260) / 2.0, 80+64, 260, 260) readerViewBounds:readerView.bounds];
-    //处理模拟器
-    if (TARGET_IPHONE_SIMULATOR)
-    {
-        ZBarCameraSimulator *cameraSimulator
-        = [[ZBarCameraSimulator alloc]initWithViewController:self];
-        cameraSimulator.readerView = readerView;
-    }
-    [self.view addSubview:readerView];
-    
-    
-    //透明区域
+      //透明区域
     
     UIImageView *img_top = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, 120)];
     [img_top setBackgroundColor:[UIColor colorWithWhite:0 alpha:0.5]] ;
@@ -96,10 +74,7 @@
     
     [self.view addSubview:lab_top2];
     
-    [readerView start];
-    
-    
-}
+    }
 
 
 - (void)didReceiveMemoryWarning {
@@ -119,63 +94,6 @@
 
 - (void)openLight
 {
-    //关闭闪光灯
-    if(readerView.torchMode == 0)
-    {
-        readerView.torchMode = 1;
-        //        [self.navigationBar_ZZ.rightBarButtonItem setTitle:@"关闪光" forState:UIControlStateNormal];
-        
-    }
-    else
-    {
-        //        readerView.torchMode = 0;
-        //        [self.navigationBar_ZZ.rightBarButtonItem setTitle:@"开闪光" forState:UIControlStateNormal];
-        
-    }
-    
+  
 }
-
-
-//获取返回值
-- (void)readerView:(ZBarReaderView *)readerView didReadSymbols:(ZBarSymbolSet *)symbols fromImage:(UIImage *)image
-{
-    NSString *codeRes = nil;
-    for (ZBarSymbol *symbol in symbols)
-    {
-        codeRes = symbol.data ;
-        NSLog(@"%@", codeRes);
-        break;
-    }
-    if (codeRes != nil)
-        
-    {
-        
-        MCWebViewController *webViewController = [[MCWebViewController alloc]initWithUrl:[NSURL URLWithString:codeRes]  titleString:@"扫一扫"];
-        
-        [self.navigationController pushViewController:webViewController animated:YES];
-        
-        
-        
-        
-        
-        
-    }
-    
-    
-    
-}
-
-
-- (void)startScan;
-{
-    [readerView start];
-    
-}
-- (void)stopScan;
-{
-    [readerView stop];
-    
-}
-
-
 @end

@@ -9,7 +9,12 @@
 #import "MCDgAccountViewController.h"
 #import "MCDgAccountTableViewCell.h"
 #import "MyMD5.h"
-@interface MCDgAccountViewController ()
+#import "MCDGmxViewController.h"
+#import "MCDgSearchViewController.h"
+#import "MCDhAccountViewController.h"
+@interface MCDgAccountViewController ()<MCDgAccountTableViewCellDelegate>
+@property(nonatomic,strong)NSString *appToken;
+@property (nonatomic, assign) int page;  //请求页码
 
 @end
 
@@ -19,13 +24,60 @@
     [super viewDidLoad];
     self.navigationItem.title = @"对公账户";
     //[self getdata];
-    [self getAuthApp];
-    [self getAuthApp1];
+    _page = 0;
+   
+   [self setListView];
+    [self therRefresh];
+    
     // Do any additional setup after loading the view.
+}
+- (void)therRefresh{
+    
+    __unsafe_unretained __typeof(self) weakSelf = self;
+    // 设置回调（一旦进入刷新状态，就调用target的action，也就是调用self的loadNewData方法）
+    MJRefreshNormalHeader *header = [MJRefreshNormalHeader headerWithRefreshingTarget:self refreshingAction:@selector(getAuthApp)];
+    
+    // 设置文字
+    [header setTitle:@"下拉刷新" forState:MJRefreshStateIdle];
+    [header setTitle:@"松手立即刷新" forState:MJRefreshStatePulling];
+    [header setTitle:@"数据加载中..." forState:MJRefreshStateRefreshing];
+    
+    // 设置字体
+    header.stateLabel.font = [UIFont systemFontOfSize:15];
+    
+    header.lastUpdatedTimeLabel.hidden = YES;
+    // 设置颜色
+    header.stateLabel.textColor = [UIColor grayColor];
+    // 马上进入刷新状态
+    [header beginRefreshing];
+    
+    // 设置刷新控件
+    listTableView.mj_header = header;
+    // 设置回调（一旦进入刷新状态就会调用这个refreshingBlock）
+    listTableView.mj_footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
+        [weakSelf loadMoreData];
+    }];
+    
+    
+    
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    
+[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(noti1) name:@"DGZHLOAD" object:nil];
+    
+
+
+}
+-(void)noti1{
+  
+   [self getAuthApp];
+   
+
 }
 -(void)setListView{
 
-    listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0,-36, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStyleGrouped];
+    listTableView = [[UITableView alloc]initWithFrame:CGRectMake(0,0, self.view.frame.size.width, self.view.frame.size.height-64) style:UITableViewStyleGrouped];
     [self.view addSubview:listTableView];
     [listTableView setBackgroundColor:[UIColor clearColor]];
     [listTableView setBackgroundView:nil];
@@ -70,11 +122,11 @@
     
     
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    
-    [dic setValue:@"33f09c7ca5e6491fbcdfd363cf58851e" forKey:@"app_uuid"];//app分配id
+   // ICEXCGJ0-5F89-4E17-BC44-7A0DB101B245",ts,@"AXPHrD48LRa8xYVkgV4c
+    [dic setValue:@"ICEXCGJ0-5F89-4E17-BC44-7A0DB101B245" forKey:@"app_uuid"];//app分配id
     [dic setValue:corp forKey:@"corp_uuid"];//租户ID
     
-    NSString *singe = [NSString stringWithFormat:@"%@%@%@",@"33f09c7ca5e6491fbcdfd363cf58851e",ts,@"48a8c06966fb40e3b1c55c95692be1d8"];
+    NSString *singe = [NSString stringWithFormat:@"%@%@%@",@"ICEXCGJ0-5F89-4E17-BC44-7A0DB101B245",ts,@"AXPHrD48LRa8xYVkgV4c"];
     
     NSString *  signature = [MyMD5 md5:singe];//签名=( APPID +ts +appSecret)md5
     [dic setValue:signature forKey:@"signature"];
@@ -83,12 +135,14 @@
     [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/authms/auth/app" parameters:dic success:^(id responseObject) {
         
         NSDictionary *dicDictionary = responseObject;
-        NSLog(@"%@",dicDictionary);
+        
         
         if ([dicDictionary[@"code"] integerValue] == 0 &&[dicDictionary[@"content"] isKindOfClass:[NSDictionary class]] )
         {
-            
+           
             [self getdata:[dicDictionary[@"content"] objectForKey:@"accessToken"]];
+            _appToken = [dicDictionary[@"content"] objectForKey:@"accessToken"];
+            
             
             
         }else{
@@ -139,14 +193,14 @@
     [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/jqfw/app/auth" parameters:dic success:^(id responseObject) {
         
         NSDictionary *dicDictionary = responseObject;
-        NSLog(@"%@",dicDictionary);
+        
         
         if ([dicDictionary[@"code"] integerValue] == 0 &&[dicDictionary[@"content"] isKindOfClass:[NSDictionary class]] )
         {
             
           
             NSString *token = [NSString stringWithFormat:@"%@",[dicDictionary[@"content"] objectForKey:@"access_token"]];
-            NSLog(@"%@",token);
+            
             [self getAppsdetail:token];
             
         }else{
@@ -179,18 +233,18 @@
    
     [sendDictionary setValue:token forKey:@"access_token"];
     
-    NSLog(@"%@",sendDictionary);
     
-    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/splitdivide/api/appsdetail" parameters:sendDictionary success:^(id responseObject) {
-        
+    
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/split/api/appdetail" parameters:sendDictionary success:^(id responseObject) {
+        [SVProgressHUD dismiss];
         NSDictionary *dicDictionary = responseObject;
-        NSLog(@"%@",dicDictionary);
+        
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
-            if ([dicDictionary[@"content"] isKindOfClass:[NSArray class]])
+            if ([dicDictionary[@"content"][@"result"] isKindOfClass:[NSArray class]])
             {
                 
-                [nameMutableArray setArray:dicDictionary[@"content"]];
+            [nameMutableArray setArray:dicDictionary[@"content"][@"result"]];
                 
                 [self setListArray];
                 
@@ -208,7 +262,10 @@
         
     } failure:^(NSError *error) {
         
-        
+        [self setErrorUI];
+        [SVProgressHUD dismiss];
+        [SVProgressHUD showErrorWithStatus:@"请求超时"];
+
         NSLog(@"****%@", error);
         
         
@@ -219,7 +276,8 @@
 }
 #pragma mark -整理两个数组数据
 -(void)setListArray{
-    NSLog(@"%@-%@",listMutableArray,nameMutableArray);
+    
+   
     for (int i=0; i<listMutableArray.count; i++)
         
     {
@@ -230,7 +288,7 @@
                 
                 NSMutableDictionary *dic =[[NSMutableDictionary alloc]initWithDictionary:[listMutableArray objectAtIndex:i]] ;
                 
-                [dic setValue:[[nameMutableArray objectAtIndex:j] objectForKey:@"name"] forKey:@"sourceName"];
+                [dic setValue:[[nameMutableArray objectAtIndex:j] objectForKey:@"general_name"] forKey:@"sourceName"];
                 
                 [listMutableArray replaceObjectAtIndex:i withObject:dic];
                 
@@ -241,11 +299,7 @@
         
     }
    
-    if (listMutableArray.count>0) {
-        [self setListView];
-    }else{
-        [self setErrorUI];
-    }
+    NSLog(@"%@",listMutableArray);
     [listTableView reloadData];
     
     
@@ -253,30 +307,113 @@
 
 
 }
-- (void)getdata:(NSString *)token{
+-(void)loadMoreData{
+
+    _page += 10;
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
     NSDictionary *dic = [defaults objectForKey:@"userInfo"];
-    NSLog(@"%@",dic);
+    
     NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
     [sendDictionary setValue:[dic objectForKey:@"uuid"] forKey:@"userId"];
-    [sendDictionary setValue:token forKey:@"token"];
-   
-     [sendDictionary setValue:@1 forKey:@"userType"];
-    [sendDictionary setValue:@1 forKey:@"familyType"];
-
-    
-  
-    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/dgzh/account/search4web" parameters:sendDictionary success:^(id responseObject) {
+    [sendDictionary setValue:@1 forKey:@"userType"];
+    [sendDictionary setValue:_appToken forKey:@"token"];
+    [sendDictionary setValue:@1 forKey:@"showmoney"];
+    [sendDictionary setValue:@1 forKey:@"status"];
+    [sendDictionary setValue:@(_page) forKey:@"skip"];
+    [sendDictionary setValue:@10 forKey:@"limit"];
+    NSLog(@"参数%@",sendDictionary);
+    [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/dgzh/account/search4web" parameters:sendDictionary success:^(id responseObject) {
         
         NSDictionary *dicDictionary = responseObject;
         NSLog(@"%@",dicDictionary);
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
-            if ([dicDictionary[@"content"] isKindOfClass:[dicDictionary class]])
+            if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
             {
+                if ([[dicDictionary[@"content"] objectForKey:@"list"] count]==0) {
+                    [listTableView.mj_footer endRefreshing];
+                    listTableView.mj_footer.state = MJRefreshStateNoMoreData;
+                    
+                }else{
+                   
+
+                    NSArray *array = [dicDictionary[@"content"] objectForKey:@"list"];
+                   
+                    for (int k=0; k<array.count; k++) {
+                        if ([[[array objectAtIndex:k] objectForKey:@"adminLevel"] integerValue] ==1) {
+                            [listMutableArray addObject:[array objectAtIndex:k]];
+                        }
+                    }
+
+                    [self getAppsdetail:_appToken];
+                    [listTableView.mj_footer endRefreshing];
+                }
                 
-                [listMutableArray setArray:[dicDictionary[@"content"] objectForKey:@"list"]];
                 
+            }
+            
+        }else{
+            
+            [self setErrorUI];
+             [listTableView.mj_footer endRefreshing];
+            
+        }
+        
+        
+        
+        
+    } failure:^(NSError *error) {
+        
+        
+        NSLog(@"****%@", error);
+         [listTableView.mj_footer endRefreshing];
+        [SVProgressHUD showErrorWithStatus:@"请求超时"];
+        
+        
+    }];
+    
+
+
+}
+- (void)getdata:(NSString *)token{
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSDictionary *dic = [defaults objectForKey:@"userInfo"];
+
+    NSMutableDictionary *sendDictionary = [NSMutableDictionary dictionary];
+    [sendDictionary setValue:[dic objectForKey:@"uuid"] forKey:@"userId"];
+    [sendDictionary setValue:@1 forKey:@"userType"];
+    [sendDictionary setValue:token forKey:@"token"];
+     [sendDictionary setValue:@1 forKey:@"showmoney"];
+    [sendDictionary setValue:@1 forKey:@"status"];
+    [sendDictionary setValue:@0 forKey:@"skip"];
+    [sendDictionary setValue:@10 forKey:@"limit"];
+   
+//     [sendDictionary setValue:@1 forKey:@"userType"];
+//    [sendDictionary setValue:@1 forKey:@"familyType"];
+
+    //[SVProgressHUD showWithStatus:@"数据加载中,请稍后..."];
+       [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/dgzh/account/search4web" parameters:sendDictionary success:^(id responseObject) {
+        
+        NSDictionary *dicDictionary = responseObject;
+           NSLog(@"%@",dicDictionary);
+        if ([dicDictionary[@"code"] integerValue] == 0 )
+        {
+            if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
+            {
+                if ([[dicDictionary[@"content"] objectForKey:@"total"] integerValue]==0) {
+                     [self setErrorUI];
+                   [listTableView.mj_header endRefreshing];
+                }else{
+                    NSArray *array = [dicDictionary[@"content"] objectForKey:@"list"];
+                //[listMutableArray setArray:[dicDictionary[@"content"] objectForKey:@"list"]];
+                for (int k=0; k<array.count; k++) {
+                        if ([[[array objectAtIndex:k] objectForKey:@"adminLevel"] integerValue] ==1) {
+                  [listMutableArray addObject:[array objectAtIndex:k]];
+                        }
+                    }
+
+                [self getAppsdetail:token];
+                }
                 
             }
             
@@ -294,6 +431,7 @@
         
         NSLog(@"****%@", error);
         
+        [SVProgressHUD showErrorWithStatus:@"请求超时"];
         
         
     }];
@@ -311,7 +449,13 @@
 {
     return 0.001;
 }
-
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
+}
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    UIView *footView = [[UIView alloc]init];
+    return footView;
+}
 //- (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
 //{
 //    return 0;
@@ -343,22 +487,47 @@
     if (cell == nil)
     {
         cell = [[MCDgAccountTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:indentifier];
-        
+        cell.delegate = self;
     }
     NSDictionary *dataDic = [listMutableArray objectAtIndex:indexPath.row];
     [cell.accountName setText:[NSString stringWithFormat:@"账户名:%@",[dataDic objectForKey:@"name"]]];
     [cell.carNumber setText:[NSString stringWithFormat:@"卡号:%@",[dataDic objectForKey:@"ano"]]];
     [cell.typeLabel setText:[NSString stringWithFormat:@"种类:%@",[dataDic objectForKey:@"typeName"]]];
-    [cell.moneyLabel setText:[NSString stringWithFormat:@"%@",[dataDic objectForKey:@"money"]]];
+    
+    [cell.moneyLabel setText:[NSString stringWithFormat:@"%.2f",[[dataDic objectForKey:@"money"] doubleValue] ]];
     NSString *sourceName = [NSString stringWithFormat:@"%@",[dataDic objectForKey:@"sourceName"]];
     if ([sourceName isEqualToString:@"(null)"]) {
-        
+       
         [cell.sourceLabel setText:[NSString stringWithFormat:@"来源:%@",[dataDic objectForKey:@"pid"]]];
     }else{
-    [cell.sourceLabel setText:[NSString stringWithFormat:@"来源:%@",[dataDic objectForKey:@"sourceName"]]];
+        
+      [cell.sourceLabel setText:[NSString stringWithFormat:@"来源:%@",[dataDic objectForKey:@"sourceName"]]];
+      
+       
     
     }
-   
+    
+    NSString *adminLevel = [NSString stringWithFormat:@"%@",[dataDic objectForKey:@"adminLevel"]];
+    NSString *pano = [NSString stringWithFormat:@"%@",[dataDic objectForKey:@"pano"]];
+    NSString *atid = [NSString stringWithFormat:@"%@",[dataDic objectForKey:@"atid"]];
+    
+    if ([pano isEqualToString:@"107126107b3f36d446a6addf4242b9c5"] && [atid isEqualToString:@"71"] &&[adminLevel isEqualToString:@"1"]) {
+         cell.dhButton.backgroundColor = BLUK_COLOR_ZAN_MC;
+        cell.dhButton.userInteractionEnabled = YES;
+    }else{
+        cell.dhButton.userInteractionEnabled = NO;
+        cell.dhButton.backgroundColor = [UIColor colorWithRed:204 / 255.0 green:204 / 255.0 blue:204/ 255.0 alpha:1];
+    }
+    if ([adminLevel isEqualToString:@"0"]) {
+       
+        cell.syButton.userInteractionEnabled = NO;
+        cell.syButton.backgroundColor = [UIColor colorWithRed:204 / 255.0 green:204 / 255.0 blue:204/ 255.0 alpha:1];
+        
+    }else{
+        
+        cell.syButton.backgroundColor = BLUK_COLOR_ZAN_MC;
+
+    }
 
     
    
@@ -374,11 +543,47 @@
     
     
 }
+#pragma mark-、明细点击事件代理方法
+-(void)MCDgAccountTableViewCell:(MCDgAccountTableViewCell *)MCDgAccountTableViewCell exchange:(UIButton *)Button{
+    
+    NSIndexPath *indexPath = [listTableView indexPathForCell:MCDgAccountTableViewCell];
+    NSDictionary *dataDictionary = [listMutableArray objectAtIndex:indexPath.row];
+    
+    MCDGmxViewController *mVC = [[MCDGmxViewController alloc]init];
+    mVC.dic = dataDictionary;
+    [self.navigationController pushViewController:mVC animated:YES];
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+#pragma mark-、使用转账点击事件代理方法
+
+-(void)MCDgAccountTableViewCell:(MCDgAccountTableViewCell *)MCDgAccountTableViewCell transfer:(UIButton *)Button{
+    
+    NSIndexPath *indexPath = [listTableView indexPathForCell:MCDgAccountTableViewCell];
+    NSDictionary *dataDictionary = [listMutableArray objectAtIndex:indexPath.row];
+
+   
+    
+    MCDgSearchViewController *DgSearchVC = [[MCDgSearchViewController alloc]init];
+    DgSearchVC.dataDic = dataDictionary;
+    [self.navigationController pushViewController:DgSearchVC animated:YES];
+}
+#pragma mark-、使用兑换点击事件代理方法
+
+-(void)MCDgAccountTableViewCell:(MCDgAccountTableViewCell *)MCDgAccountTableViewCell dhAccount:(UIButton *)Button{
+    
+    NSIndexPath *indexPath = [listTableView indexPathForCell:MCDgAccountTableViewCell];
+    NSDictionary *dataDictionary = [listMutableArray objectAtIndex:indexPath.row];
+    
+    MCDhAccountViewController *dhVC = [[MCDhAccountViewController alloc]init];
+    dhVC.dataDic = dataDictionary;
+    [self.navigationController pushViewController:dhVC animated:YES];
+    
+}
+
 
 /*
 #pragma mark - Navigation

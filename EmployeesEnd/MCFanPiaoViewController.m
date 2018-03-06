@@ -11,6 +11,7 @@
 #import "MCMyBousViewController.h"
 #import "MCFPDetailsViewController.h"
 #import "MCTransferMoneyViewController.h"
+#import "MCFanPiaoDGViewController.h"
 @interface MCFanPiaoViewController ()
 @property(nonatomic,strong)NSString *balance;
 @end
@@ -190,8 +191,47 @@
 
 }
 -(void)fpDetails{
-    MCFPDetailsViewController *fpvc = [[MCFPDetailsViewController alloc]init];
-    [self.navigationController pushViewController:fpvc animated:YES];
+    
+//    MCFPDetailsViewController *fpvc = [[MCFPDetailsViewController alloc]init];
+//    [self.navigationController pushViewController:fpvc animated:YES];
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    
+    NSString *username = [defaults objectForKey:@"userName"];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    
+    [dic setValue:username forKey:@"oa_username"];
+    
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/newczy/employee/getFinanceByOa" parameters:dic success:^(id responseObject) {
+        
+        NSDictionary *dicDictionary = responseObject;
+        
+        if ([dicDictionary[@"code"] integerValue] == 0 )
+        {
+            if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
+            {
+                
+                
+                MCFanPiaoDGViewController *fpdgVC = [[MCFanPiaoDGViewController alloc]init];
+                fpdgVC.dic = dicDictionary[@"content"];
+                [self.navigationController pushViewController:fpdgVC animated:YES];
+                
+            }
+            
+        }else{
+            
+            [SVProgressHUD showErrorWithStatus:dicDictionary[@"message"]];
+        }
+        
+        
+        
+        
+    } failure:^(NSError *error) {
+        
+        
+        
+        
+        
+    }];
 
 
 }

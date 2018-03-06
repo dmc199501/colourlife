@@ -151,14 +151,20 @@
             
         default:
         {
-            return 10;
+            return 10.00;
         }
             break;
     }
     return 0;
     
 }
-
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
+}
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    UIView *footView = [[UIView alloc]init];
+    return footView;
+}
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;
 {
     return 1;

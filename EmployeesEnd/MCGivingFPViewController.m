@@ -10,6 +10,8 @@
 #import "MCFanPiaoViewController.h"
 #import "TPPasswordTextView.h"
 #import "MCTransferMoneyViewController.h"
+#import "MCContactViewController.h"
+#import "MCSucceedViewController.h"
 @interface MCGivingFPViewController ()
 
 @end
@@ -107,15 +109,18 @@
     [_moneyTextField setDelegate:self];
     [backView addSubview:_moneyTextField];
     
-    UILabel *label3 = [[UILabel alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(label)+30, 30, 30)];
-    label3.backgroundColor = [UIColor clearColor];
-    [backView addSubview:label3];
-    label3.text= @"¥";
-    label3.textAlignment = NSTextAlignmentLeft;
-    label3.textColor =  [UIColor blackColor];
-    label3.font = [UIFont systemFontOfSize:35];
+    UIImageView *moneyView = [[UIImageView alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(label)+30, 30, 30)];
+    [moneyView setImage:[UIImage imageNamed:@"fanpiao-icon"]];
+     [backView addSubview:moneyView];
+//    UILabel *label3 = [[UILabel alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(label)+30, 30, 30)];
+//    label3.backgroundColor = [UIColor clearColor];
+//    [backView addSubview:label3];
+//    label3.text= @"¥";
+//    label3.textAlignment = NSTextAlignmentLeft;
+//    label3.textColor =  [UIColor blackColor];
+//    label3.font = [UIFont systemFontOfSize:35];
     
-    UIView *line = [[UIView alloc]initWithFrame:CGRectMake(50, BOTTOM_Y(label3)+10,SCREEN_WIDTH-100, 1)];
+    UIView *line = [[UIView alloc]initWithFrame:CGRectMake(50, BOTTOM_Y(moneyView)+10,SCREEN_WIDTH-100, 1)];
     line.backgroundColor = [UIColor colorWithRed:230 / 255.0 green:230 / 255.0 blue:230 / 255.0 alpha:1];
     [backView addSubview:line];
     
@@ -133,13 +138,15 @@
     line2.backgroundColor = [UIColor colorWithRed:230 / 255.0 green:230 / 255.0 blue:230 / 255.0 alpha:1];
     [backView addSubview:line2];
     
-    UILabel *money = [[UILabel alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(line2)+10, SCREEN_WIDTH, 20)];
-    money.backgroundColor = [UIColor clearColor];
-    [backView addSubview:money];
-    money.text= [NSString stringWithFormat:@"可用余额:%@",self.balance];
-    money.textAlignment = NSTextAlignmentLeft;
-    money.textColor =  GRAY_COLOR_ZZ;
-    money.font = [UIFont systemFontOfSize:15];
+    moneyLabel = [[UILabel alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(line2)+10, SCREEN_WIDTH, 20)];
+    moneyLabel.backgroundColor = [UIColor clearColor];
+    [backView addSubview:moneyLabel];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSString *fanpiao  = [userDefaults objectForKey:@"fanpiao"];
+    moneyLabel.text= [NSString stringWithFormat:@"可用余额:%@",fanpiao];
+    moneyLabel.textAlignment = NSTextAlignmentLeft;
+    moneyLabel.textColor =  GRAY_COLOR_ZZ;
+    moneyLabel.font = [UIFont systemFontOfSize:15];
     
     
     UIButton *leaveButton = [[UIButton alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(backView)+40, SCREEN_WIDTH-40, 40)];
@@ -166,8 +173,18 @@
     }
     
 }
+-(void)viewWillAppear:(BOOL)animated{
 
+    [super viewWillAppear:animated];
+    
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSString *fanpiao  = [userDefaults objectForKey:@"fanpiao"];
+    moneyLabel.text= [NSString stringWithFormat:@"可用余额:%@",fanpiao];
+
+}
 -(void)next{
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSString *fanpiao  = [userDefaults objectForKey:@"fanpiao"];
     
     if ([_moneyTextField.text floatValue] == 0 ) {
         UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"输入金额不能为0" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
@@ -180,7 +197,7 @@
         return;
     }
     
-    if ([_moneyTextField.text integerValue] >[self.balance integerValue] ) {
+    if ([_moneyTextField.text floatValue] >[fanpiao floatValue] ) {
         UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"余额不足" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
         [alertView show];
         return;
@@ -193,7 +210,10 @@
     _backView.backgroundColor = BLACKS_COLOR_ZZ;
     
     
-    _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-200)/2, SCREEN_WIDTH-80, 200)];
+    if (SCREEN_WIDTH == 320) {
+        _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-420)/2, SCREEN_WIDTH-80, 200)];
+    }else{
+        _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-320)/2, SCREEN_WIDTH-80, 200)];}
     _passWordView.backgroundColor = [UIColor whiteColor];
     //[_userPhotoImageView setUserInteractionEnabled:NO];
     [_passWordView.layer setCornerRadius:5];
@@ -286,18 +306,9 @@
                 if ([dicDictionary[@"content"][@"state"] isEqualToString:@"no"]) {
                     [SVProgressHUD showErrorWithStatus:@"密码错误"];
                 }else{
+                    
                     [self next1];
-                    NSArray *vcArray = self.navigationController.viewControllers;
-                    
-                    
-                    for(UIViewController *vc in vcArray)
-                    {
-                        if ([vc isKindOfClass:[MCTransferMoneyViewController class]])
-                        {
-                            [self.navigationController popToViewController:vc animated:YES];
-                        }
-                    }
-
+                   
                 }
                 
             }
@@ -360,19 +371,21 @@
             if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
             {
                 if ([dicDictionary[@"content"][@"ok"] integerValue] ==1) {
-                    [SVProgressHUD showSuccessWithStatus:@"成功"];
                     
-                    NSArray *vcArray = self.navigationController.viewControllers;
+                    [self getBalancet];
                     
-                    
-                    for(UIViewController *vc in vcArray)
-                    {
-                        if ([vc isKindOfClass:[MCTransferMoneyViewController class]])
-                        {
-                            [self.navigationController popToViewController:vc animated:YES];
-                        }
+                    MCSucceedViewController *succeedVC = [[MCSucceedViewController alloc]init];
+                    succeedVC.typeSting = @"hongbao";
+                    if ([self.type integerValue] ==1){
+                        succeedVC.BZSting= [NSString stringWithFormat:@"%@(%@)",self.dataDic[@"name"],self.dataDic[@"mobile"]];
+                    }else{
+                        succeedVC.BZSting = [NSString stringWithFormat:@"%@(%@)",self.dataDic[@"receiverName"],self.dataDic[@"receiverMobile"]];
                     }
-
+                    
+                    succeedVC.JESting = _moneyTextField.text;
+                    [self.navigationController pushViewController:succeedVC animated:YES];
+                    
+                   
                 }else{
                     
                     [SVProgressHUD showSuccessWithStatus:dicDictionary[@"message"]];
@@ -399,6 +412,58 @@
 
     
 }
+
+-(void)getBalancet{
+    
+    NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
+    NSString *key = [defaults objectForKey:@"key"];
+    NSString *secret = [defaults objectForKey:@"secret"];
+    
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    
+    [dic setValue:key forKey:@"key"];
+    [dic setValue:secret forKey:@"secret"];
+    
+    
+    [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/hongbao/getBalance" parameters:dic success:^(id responseObject) {
+        
+        NSDictionary *dicDictionary = responseObject;
+        NSLog(@"%@",dicDictionary);
+        if ([dicDictionary[@"code"] integerValue] == 0 )
+        {
+            if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
+            {
+                
+                
+                
+                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                
+                [userDefaults setObject:[NSString stringWithFormat:@"%@",dicDictionary[@"content"][@"balance"]] forKey:@"fanpiao"];
+                [userDefaults synchronize];
+                
+                
+                
+                
+            }
+            
+        }else{
+            
+            
+        }
+        
+        
+        
+        
+    } failure:^(NSError *error) {
+        
+        
+        
+        
+        
+    }];
+    
+}
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

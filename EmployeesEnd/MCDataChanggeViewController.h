@@ -37,6 +37,7 @@
 @property(nonatomic,strong)NSString *phoneString;
 @property(nonatomic,strong)NSString *titleString;
 @property(nonatomic,strong)NSString *nameString;
+@property(nonatomic,strong)NSString *orgType;
 @property(nonatomic,assign)NSInteger type;
 
 @property (nonatomic,assign)id<MCDataChanggeViewControllerDeleGete>delegate;

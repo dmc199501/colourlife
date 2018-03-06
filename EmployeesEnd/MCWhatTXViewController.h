@@ -11,8 +11,8 @@
 @interface MCWhatTXViewController : MCRootViewControler{
 
     UILabel *userName;
-    UILabel *bank;
-    UILabel *card;
+    UILabel *bankLabel;
+    UILabel *cardLabel;
     UILabel *dzLabel;
 
 }

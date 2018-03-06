@@ -195,11 +195,11 @@
     NSMutableDictionary *sendDict = [NSMutableDictionary dictionary];
     [sendDict setObject:uid forKey:@"uid"];
     [sendDict setObject:username forKey:@"username"];
-    NSLog(@"%@",sendDict);
+    
     [MCHttpManager GETWithIPString:BASEURL_AREA urlMethod:@"/account" parameters:sendDict success:^(id responseObject) {
         
         NSDictionary *dicDictionary = responseObject;
-        NSLog(@"%@",dicDictionary);
+        
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
             if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
@@ -507,7 +507,13 @@
     }
     return 45;
 }
-
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
+}
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    UIView *footView = [[UIView alloc]init];
+    return footView;
+}
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section;
 {
     switch (section)

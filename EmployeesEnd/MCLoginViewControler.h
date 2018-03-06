@@ -8,7 +8,10 @@
 
 #import "MCRootViewControler.h"
 
-@interface MCLoginViewControler : MCRootViewControler<UITextFieldDelegate,UINavigationControllerDelegate>
+@interface MCLoginViewControler : MCRootViewControler<UITextFieldDelegate,UINavigationControllerDelegate>{
+    UIView *passwordView;
+
+}
 
 
 @end

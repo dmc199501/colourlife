@@ -14,7 +14,24 @@
 #include <arpa/inet.h>
 #import "SPTabBarController.h"
 #import "MCValidationCodeViewController.h"
-@interface MCLoginViewControler()
+
+#import <GT3Captcha/GT3Captcha.h>
+#import <WebKit/WebKit.h>
+
+#import "CustomButton.h"
+#import "TextField.h"
+#import "TipsView.h"
+
+#import "NSAttributedString+AttributedString.h"
+
+//网站主部署的用于验证登录的接口 (api_1)
+#define api_1 @"http://www.geetest.com/demo/gt/register-click"
+//网站主部署的二次验证的接口 (api_2)
+#define api_2 @"http://www.geetest.com/demo/gt/validate-click"
+@interface MCLoginViewControler()<GT3CaptchaManagerDelegate, CaptchaButtonDelegate>
+@property (nonatomic, strong) GT3CaptchaButton *captchaButton;
+
+
 @property(nonatomic,strong)UITextField *IDField;
 @property(nonatomic,strong)UITextField *passwordField;
 @property(nonatomic,strong)NSString *IPString;
@@ -24,6 +41,20 @@
 @end
 
 @implementation MCLoginViewControler
+- (GT3CaptchaButton *)captchaButton {
+    if (!_captchaButton) {
+        //创建验证管理器实例
+        GT3CaptchaManager *captchaManager = [[GT3CaptchaManager alloc] initWithAPI1:api_1 API2:api_2 timeout:5.0];
+        captchaManager.delegate = self;
+        captchaManager.maskColor = [UIColor colorWithRed:0.0 green:0.0 blue:0.0 alpha:0.6];
+        
+        //debug mode
+        //        [captchaManager enableDebugMode:YES];
+        //创建验证视图的实例
+        _captchaButton = [[GT3CaptchaButton alloc] initWithFrame:CGRectMake(0, 0, 260, 40) captchaManager:captchaManager];
+    }
+    return _captchaButton;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -77,7 +108,7 @@
     _IDField.delegate = self;
     _IDField.keyboardType = UIKeyboardTypeURL;
     
-    UIView *passwordView = [[UIView alloc]initWithFrame:CGRectMake((SCREEN_WIDTH-340*SCREEN_WIDTH/375)/2, BOTTOM_Y(IDView)+18, 340*SCREEN_WIDTH/375, 40)];
+    passwordView = [[UIView alloc]initWithFrame:CGRectMake((SCREEN_WIDTH-340*SCREEN_WIDTH/375)/2, BOTTOM_Y(IDView)+18, 340*SCREEN_WIDTH/375, 40)];
     [self.view addSubview:passwordView];
     passwordView.backgroundColor = [UIColor colorWithRed:245 / 255.0 green:245 / 255.0 blue:245 / 255.0 alpha:1];
     passwordView.layer.cornerRadius = 6;
@@ -106,7 +137,7 @@
     [loginButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     loginButton.titleLabel.font = [UIFont systemFontOfSize:16];
     [loginButton addTarget:self action:@selector(userLogin) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:loginButton];
+    //[self.view addSubview:loginButton];
     [loginButton.layer setCornerRadius:4];
     
     UIImageView *finishImage = [[UIImageView alloc]initWithFrame:CGRectMake((loginButton.frame.size.width/2)-50, 12, 15, 15)];
@@ -121,6 +152,8 @@
     forgetButton.titleLabel.font = [UIFont systemFontOfSize:14];
     
     [forgetButton setTitleColor:[UIColor grayColor] forState:UIControlStateNormal];
+    
+    [self setupLoginButton];
     // Do any additional setup after loading the view.
 }
 -(void)forgetPassWord{
@@ -234,7 +267,7 @@
         }else{
         
         NSString *messageString = dicDictionary[@"message"];
-            [SVProgressHUD showErrorWithStatus:messageString];
+        [SVProgressHUD showErrorWithStatus:messageString];
         
         }
         
@@ -243,12 +276,7 @@
         
         
         NSLog(@"****%@", error);
-        NSString *cw = [NSString stringWithFormat:@"%@",error];
-        NSString *title = [NSString stringWithFormat:@"账号:%@密码:%@",_IDField.text,_passwordField.text];
-        UIAlertView *alert = [[UIAlertView alloc]initWithTitle:title message:cw delegate:self cancelButtonTitle:@"OK" otherButtonTitles:@"取消", nil];
-        alert.tag = 1001;
-        [alert show];
-
+       
         [SVProgressHUD showErrorWithStatus:@"网络不给力"];
        
         
@@ -370,6 +398,118 @@
     
     [self.navigationController setNavigationBarHidden:isShowHomePage animated:YES];
 }
+
+
+
+
+
+- (void)setupLoginButton {
+    CustomButton *button = [[CustomButton alloc] initWithFrame:CGRectMake((SCREEN_WIDTH-340*SCREEN_WIDTH/375)/2, BOTTOM_Y(passwordView)+28, 340*SCREEN_WIDTH/375, 40)];
+    button.delegate = self;
+    button.backgroundColor = BLUK_COLOR_ZAN_MC;
+    [button setClipsToBounds:YES];
+        NSAttributedString *attrString = [NSAttributedString generate:@"立即登录" fontSize:16.0 color:[UIColor whiteColor]];
+    
+    button.layer.cornerRadius = 2.0;
+    button.titleLabel.attributedText = attrString;
+    [button setTitle:@"立即登录" forState:UIControlStateNormal];
+    button.titleLabel.textColor = [UIColor whiteColor];
+    //button.center = CGPointMake(self.view.center.x, self.view.center.y + 74);
+    
+    [self.view addSubview:button];
+    
+}
+
+- (void)login {
+    
+}
+
+#pragma MARK - CaptchaButtonDelegate
+
+- (BOOL)captchaButtonShouldBeginTapAction:(CustomButton *)button {
+    if ([_IDField.text length] == 0 ||[_passwordField.text length] == 0)
+    {
+        UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:nil message:@"请输入正确账号或密码再提交验证" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil];
+        [alertView show];
+        return NO;
+
+       
+    }else{
+       
+        [self.view endEditing:YES];
+    
+
+        return YES;
+
+    
+    }
+    
+   
+    return NO;
+ 
+   
+
+   }
+
+- (void)captcha:(GT3CaptchaManager *)manager didReceiveSecondaryCaptchaData:(NSData *)data response:(NSURLResponse *)response error:(GT3Error *)error {
+    //演示中全部默认为成功, 不对返回做判断
+    NSString *dataString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    if ([dataString containsString:@"success"]&&[dataString containsString:@"登录成功"]) {
+        [self userLogin];
+    }
+    NSLog(@"\ndata: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+    //    [TipsView showTipOnKeyWindow:@"DEMO: 登录成功"];
+}
+
+#pragma MARK - GT3CaptchaManagerDelegate
+
+- (void)gtCaptcha:(GT3CaptchaManager *)manager errorHandler:(GT3Error *)error {
+    //处理验证中返回的错误
+    if (error.code == -999) {
+        // 请求被意外中断, 一般由用户进行取消操作导致, 可忽略错误
+    }
+    else if (error.code == -10) {
+        // 预判断时被封禁, 不会再进行图形验证
+    }
+    else if (error.code == -20) {
+        // 尝试过多
+    }
+    else {
+        // 网络问题或解析失败, 更多错误码参考开发文档
+    }
+    [TipsView showTipOnKeyWindow:error.error_code fontSize:12.0];
+}
+
+- (void)gtCaptchaUserDidCloseGTView:(GT3CaptchaManager *)manager {
+    NSLog(@"User Did Close GTView.");
+}
+
+- (void)gtCaptcha:(GT3CaptchaManager *)manager didReceiveSecondaryCaptchaData:(NSData *)data response:(NSURLResponse *)response error:(GT3Error *)error decisionHandler:(void (^)(GT3SecondaryCaptchaPolicy))decisionHandler {
+    if (!error) {
+        //处理你的验证结果
+        NSLog(@"\ndata: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+        //成功请调用decisionHandler(GT3SecondaryCaptchaPolicyAllow)
+        decisionHandler(GT3SecondaryCaptchaPolicyAllow);
+        //失败请调用decisionHandler(GT3SecondaryCaptchaPolicyForbidden)
+        //decisionHandler(GT3SecondaryCaptchaPolicyForbidden);
+        
+           }
+    else {
+        //二次验证发生错误
+        decisionHandler(GT3SecondaryCaptchaPolicyForbidden);
+        [TipsView showTipOnKeyWindow:error.error_code fontSize:12.0];
+    }
+}
+
+
+- (void)gtCaptcha:(GT3CaptchaManager *)manager willSendRequestAPI1:(NSURLRequest *)originalRequest withReplacedHandler:(void (^)(NSURLRequest *))replacedHandler {
+    NSMutableURLRequest *mRequest = [originalRequest mutableCopy];
+    NSString *newURL = [NSString stringWithFormat:@"%@?t=%.0f", originalRequest.URL.absoluteString, [[[NSDate alloc] init]timeIntervalSince1970]];
+    mRequest.URL = [NSURL URLWithString:newURL];
+    
+    replacedHandler(mRequest);
+}
+
 /*
 #pragma mark - Navigation
 

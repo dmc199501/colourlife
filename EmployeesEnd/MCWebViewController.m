@@ -9,12 +9,10 @@
 #define DefaultLocationTimeout 10
 #define DefaultReGeocodeTimeout 5
 #import "MCWebViewController.h"
-#import <AMapFoundationKit/AMapFoundationKit.h>
+#import <AMapSearchKit/AMapSearchKit.h>
 #import "APIKey.h"
-#import "MainViewController.h"
-#import "SerialLocationViewController.h"
 #import  <JavaScriptCore/JavaScriptCore.h>
-#import "APService.h"
+#
 #import "DownListManager.h"
 #import <AMapSearchKit/AMapSearchKit.h>
 #import "Base64.h"
@@ -25,7 +23,7 @@
 #import <ShareSDKUI/ShareSDK+SSUI.h>
 #import <ShareSDKUI/SSUIShareActionSheetStyle.h>
 
-@interface MCWebViewController ()<MAMapViewDelegate, AMapLocationManagerDelegate,AMapSearchDelegate>{
+@interface MCWebViewController ()<AMapSearchDelegate>{
     
         NSURLConnection *theConnection;
     
@@ -385,7 +383,7 @@
            
             }
         else if ([funcStr isEqualToString:@"coordinate"]) {
- 
+            [self configureAPIKey];
             [self getCoordinate];
             
 
@@ -401,9 +399,10 @@
         }else if ([funcStr isEqualToString:@"return"]){
         
             [self returnUp];
-        
+            
         }else if ([funcStr isEqualToString:@"shutDown"]){
             [self right1Click];
+           
         
         }
            
@@ -486,7 +485,7 @@
 - (void)reverseGeoWithLng:(double)lng andLat:(double)lat {
     
     //构造AMapReGeocodeSearchRequest对象  118.083943,24.444355
-    
+   
     AMapReGeocodeSearchRequest *regeo = [[AMapReGeocodeSearchRequest alloc] init];
     
     regeo.location = [AMapGeoPoint locationWithLatitude:lat longitude:lng];
@@ -494,7 +493,7 @@
     regeo.requireExtension = YES;
     
     //发起逆地理编码
-    [self.mapSearch AMapReGoecodeSearch: regeo];
+    [self.mapSearch AMapReGoecodeSearch:regeo];
 
     
    
@@ -503,7 +502,7 @@
 - (void)onReGeocodeSearchDone:(AMapReGeocodeSearchRequest *)request response:(AMapReGeocodeSearchResponse *)response
 {
    
-    
+   
     if(response.regeocode != nil)
     {
         //通过AMapReGeocodeSearchResponse对象处理搜索结果
@@ -516,8 +515,8 @@
         NSString *lat = [NSString stringWithFormat:@"%lf", request.location.latitude];
         
         NSString *retStr = [self toJSONStringWithDictionary:@{@"longitude": lng, @"latitude": lat, @"province": province, @"city":city, @"district":district, @"address": address} andFunctionCode:@"coordinate"];
-//         UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"" message:retStr delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"ok", nil];
-//        [alert show];
+        [SVProgressHUD showWithStatus:retStr];
+
         [self nativeCallJSWithParamsByFunctionCode:@"coordinate" andData:retStr];
         
         
@@ -653,16 +652,6 @@
     }
 }
 
-- (void)getMapDatas{
-    
-    [self getMap];
-   
-
-    
-    
-    
-
-}
 
 - (void)getdeviceId{
 
@@ -759,20 +748,7 @@ NSString *identifierForVendor1 = [[UIDevice currentDevice].identifierForVendor U
        
 }
 
-- (void)getMap{
-    //[self configureAPIKey];
-    self.locationManager = [[AMapLocationManager alloc] init];
-    [self.locationManager setDesiredAccuracy:kCLLocationAccuracyThreeKilometers];
-    //self.locationManager.locationTimeout =2;
-    //   逆地理请求超时时间，最低2s，此处设置为10s
-    //self.locationManager.reGeocodeTimeout = 2;
-    [self getmaop];
-       // [self initToolBar];
-    
-    // [self initMapView];
-    
-    
-}
+
 - (void)configureAPIKey
 {
     if ([APIKey length] == 0)
@@ -784,7 +760,10 @@ NSString *identifierForVendor1 = [[UIDevice currentDevice].identifierForVendor U
         [alert show];
     }
     
-    [AMapServices sharedServices].apiKey = (NSString *)APIKey;
+    [MAMapServices sharedServices].apiKey = (NSString *)APIKey;
+    [AMapSearchServices sharedServices].apiKey = (NSString *)APIKey;
+    
+
 }
 
 
@@ -830,83 +809,8 @@ NSString *identifierForVendor1 = [[UIDevice currentDevice].identifierForVendor U
     
 }
 
-#pragma mark - Action Handle
-
-- (void)configLocationManager
-{
-    self.locationManager = [[AMapLocationManager alloc] init];
-    
-    [self.locationManager setDelegate:self];
-   
-    
-    //设置期望定位精度
-    [self.locationManager setDesiredAccuracy:kCLLocationAccuracyHundredMeters];
-    
-    //设置不允许系统暂停定位
-    [self.locationManager setPausesLocationUpdatesAutomatically:NO];
-    
-    //设置允许在后台定位
-    [self.locationManager setAllowsBackgroundLocationUpdates:NO];
-    
-    //设置定位超时时间
-    [self.locationManager setLocationTimeout:DefaultLocationTimeout];
-    
-    //设置逆地理超时时间
-    [self.locationManager setReGeocodeTimeout:DefaultReGeocodeTimeout];
-}
-
-- (void)reGeocodeAction
-{
-    //进行单次带逆地理定位请求
-    NSLog(@"进行单次带逆地理定位请求");
-    [self.locationManager requestLocationWithReGeocode:YES completionBlock:self.completionBlock];
-    
-    
-}
 
 
-
-#pragma mark - Initialization
-
-- (void)getmaop{
-    
-    [self.locationManager requestLocationWithReGeocode:YES completionBlock:^(CLLocation *location, AMapLocationReGeocode *regeocode, NSError *error) {
-        
-        if (error)
-        {
-            NSLog(@"locError:{%ld - %@};", (long)error.code, error.localizedDescription);
-            
-            if (error.code == AMapLocationErrorLocateFailed)
-            {
-                return;
-            }
-        }
-        
-        NSLog(@"location:%@", location);
-        
-        if (regeocode)
-        {
-            NSLog(@"reGeocode:%@", regeocode);
-            NSString *province = [NSString stringWithFormat:@"%@",regeocode.province];
-            NSString *district = [NSString stringWithFormat:@"%@",regeocode.district];
-            NSString *city = [NSString stringWithFormat:@"%@",regeocode.city];
-            NSLog(@"%@%@%@%lf%lf",province,district,city,location.coordinate.latitude,location.coordinate.longitude);
-            _dic = @{@"message":@"coordinate",@"content":@{@"province":province,@"longitude":@(location.coordinate.longitude),@"latitude":@(location.coordinate.latitude),@"district":district,@"city":city},@"code":@"0"};
-            [MCPublicDataSingleton sharePublicDataSingleton].mapDic = _dic;
-            //NSLog(@"我是多少啊 啊啊啊  ----%d",_tol);
-//            if (_tol == 0) {
-//                NSLog(@"定位");
-            
-//                [self nativeCallJSWithParamsByFunctionCode:@"coordinate" andData:[self convertToJsonData:_dic]];
-                
-          //  }
-            
-
-        }
-    }];
-
-
-}
 
 -(NSString *)convertToJsonData:(NSDictionary *)dict
 

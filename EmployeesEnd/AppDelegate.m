@@ -16,9 +16,8 @@
 #import "JPUSHService.h"
 #ifdef NSFoundationVersionNumber_iOS_9_x_Max
 #import <UserNotifications/UserNotifications.h>
-#import <AMapLocationKit/AMapLocationKit.h>
-#import <AMapFoundationKit/AMapFoundationKit.h>
 #import <AMapSearchKit/AMapSearchKit.h>
+
 #import "APIKey.h"
 #import "MCWebViewController.h"
 #import <ShareSDK/ShareSDK.h>
@@ -28,8 +27,8 @@
 #endif
 
 
-@interface AppDelegate ()<JPUSHRegisterDelegate, AMapLocationManagerDelegate,AMapSearchDelegate>
-@property (nonatomic, strong) AMapLocationManager *locationManager;
+@interface AppDelegate ()<JPUSHRegisterDelegate,AMapSearchDelegate>
+
 @property (nonatomic, assign)int isPushData;
 @end
 
@@ -40,7 +39,7 @@
     
     
     
-    
+   
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     [self chooseRoot];
         
@@ -89,6 +88,7 @@
 
     [self configureAPIKey];
     [self share];
+   
     // Override point for customization after application launch.
     
     return YES;
@@ -144,7 +144,9 @@
         [alert show];
     }
     
-    [AMapServices sharedServices].apiKey = (NSString *)APIKey;
+    [MAMapServices sharedServices].apiKey = (NSString *)APIKey;
+    [AMapSearchServices sharedServices].apiKey = (NSString *)APIKey;
+
 }
 
 - (void)chooseRoot{
@@ -259,14 +261,23 @@ fetchCompletionHandler:
      [JPUSHService setBadge:0];
     completionHandler(UIBackgroundFetchResultNewData);
 }
-- (void)applicationWillEnterForeground:(UIApplication *)application { [application setApplicationIconBadgeNumber:0];
-    
-    //清除角标
+
+//点击App图标，使App从后台恢复至前台
+- (void)applicationWillEnterForeground:(UIApplication *)application {
+    [application setApplicationIconBadgeNumber:0];
     [application cancelAllLocalNotifications];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"pushList" object:nil];
+     [[NSNotificationCenter defaultCenter] postNotificationName:@"pushList" object:nil];
     
-    }
-    
+}
+
+
+
+//按Home键使App进入后台
+
+- (void)applicationDidEnterBackground:(UIApplication *)application{
+[[UIApplication sharedApplication] setApplicationIconBadgeNumber:0];
+}
+
 
 - (NSString*)dictionaryToJson:(NSDictionary *)dic { NSError *parseError = nil; NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dic options:NSJSONWritingPrettyPrinted error:&parseError]; return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
@@ -549,10 +560,6 @@ didReceiveLocalNotification:(UILocalNotification *)notification {
     // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.
 }
 
-- (void)applicationDidEnterBackground:(UIApplication *)application {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-}
 
 
 

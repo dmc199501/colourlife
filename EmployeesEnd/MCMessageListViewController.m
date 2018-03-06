@@ -58,6 +58,7 @@
     
     
     [MCHttpManager PutWithIPString:BASEURL_AREA urlMethod:@"/push2/homepush/readhomePush" parameters:sendDictionary success:^(id responseObject)
+    
      {
          
          

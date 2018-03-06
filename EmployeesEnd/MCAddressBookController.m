@@ -232,13 +232,16 @@
 }
 
 - (void)getOrgms{
-    NSLog(@"%@",@"获取组织架构名称");
+   
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
     NSString *orgToken = [defaults objectForKey:@"orgToken"];
      NSString *corp = [defaults objectForKey:@"corpId"];
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
      [dic setValue:orgToken forKey:@"token"];
      [dic setValue:@"0" forKey:@"parentId"];
+    [dic setValue:@"0" forKey:@"familyTypeId"];
+    [dic setValue:@"0" forKey:@"type"];
+    [dic setValue:@"0" forKey:@"status"];
     [dic setValue:corp forKey:@"corpId"];
     NSLog(@"%@",dic);
     
@@ -323,7 +326,13 @@
     
     return 0;
    }
-
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
+}
+-(UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section{
+    UIView *footView = [[UIView alloc]init];
+    return footView;
+}
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section;
 {
     

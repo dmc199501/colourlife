@@ -7,13 +7,9 @@
 //
 
 #import "MCRootViewControler.h"
-#import "ZBarSDK.h"
+
 @protocol MCBarCodeViewControllerDelegate;
-@interface MCBarCodeViewController : MCRootViewControler<ZBarReaderViewDelegate>
-{
-    ZBarReaderView  *readerView;
-}
-@property (nonatomic, assign)id delegate;
+@interface MCBarCodeViewController : MCRootViewControler@property (nonatomic, assign)id delegate;
 
 
 @end

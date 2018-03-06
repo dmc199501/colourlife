@@ -42,7 +42,7 @@ sizeWithFont:font constrainedToSize:maxSize lineBreakMode:mode] : CGSizeZero;
 #define BASEURL_SHOP @"http://192.168.2.178:30026/v1"
 #define SCREEN_HEIGHT           [UIScreen mainScreen].bounds.size.height
 #define SCREEN_WIDTH            [UIScreen mainScreen].bounds.size.width
-
+#define iPhoneX ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1125, 2436), [[UIScreen mainScreen] currentMode].size) : NO)
 #define LEFT_X(a)          CGRectGetMinX(a.frame)         //控件左边面的X坐标
 #define RIGHT_X(a)         CGRectGetMaxX(a.frame)         //控件右面的X坐标
 #define TOP_Y(a)           CGRectGetMinY(a.frame)         //控件上面的Y坐标

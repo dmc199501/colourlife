@@ -34,24 +34,24 @@
     userName.text = [NSString stringWithFormat:@"持卡人: %@",self.name];
     [back addSubview:userName];
     
-    bank = [[UILabel alloc]initWithFrame:CGRectMake(16,45, SCREEN_WIDTH-32, 20)];
+    bankLabel = [[UILabel alloc]initWithFrame:CGRectMake(16,45, SCREEN_WIDTH-32, 20)];
     
-    bank.textColor = [UIColor colorWithRed:51 / 255.0 green:52 / 255.0 blue:61/ 255.0 alpha:1];
-    bank.backgroundColor = [UIColor clearColor];
-    bank.textAlignment = NSTextAlignmentLeft;
-    [bank setFont:[UIFont systemFontOfSize:15]];
-    bank.text = [NSString stringWithFormat:@"银行: %@",self.bank];
-    [back addSubview:bank];
+    bankLabel.textColor = [UIColor colorWithRed:51 / 255.0 green:52 / 255.0 blue:61/ 255.0 alpha:1];
+    bankLabel.backgroundColor = [UIColor clearColor];
+    bankLabel.textAlignment = NSTextAlignmentLeft;
+    [bankLabel setFont:[UIFont systemFontOfSize:15]];
+    bankLabel.text = [NSString stringWithFormat:@"银行: %@",self.bank];
+    [back addSubview:bankLabel];
     
-    card = [[UILabel alloc]initWithFrame:CGRectMake(16,70, SCREEN_WIDTH-32, 20)];
-    card.textColor = [UIColor colorWithRed:51 / 255.0 green:52 / 255.0 blue:61/ 255.0 alpha:1];
-    card.backgroundColor = [UIColor clearColor];
-    card.textAlignment = NSTextAlignmentLeft;
-    [card setFont:[UIFont systemFontOfSize:15]];
-    card.text = [NSString stringWithFormat:@"卡号: %@",self.card];;
-    [back addSubview:card];
+    cardLabel = [[UILabel alloc]initWithFrame:CGRectMake(16,70, SCREEN_WIDTH-32, 20)];
+    cardLabel.textColor = [UIColor colorWithRed:51 / 255.0 green:52 / 255.0 blue:61/ 255.0 alpha:1];
+    cardLabel.backgroundColor = [UIColor clearColor];
+    cardLabel.textAlignment = NSTextAlignmentLeft;
+    [cardLabel setFont:[UIFont systemFontOfSize:15]];
+    cardLabel.text = [NSString stringWithFormat:@"卡号: %@",self.card];;
+    [back addSubview:cardLabel];
     
-    UIView *line = [[UIView alloc]initWithFrame:CGRectMake(0, BOTTOM_Y(card)+21,SCREEN_WIDTH, 1)];
+    UIView *line = [[UIView alloc]initWithFrame:CGRectMake(0, BOTTOM_Y(cardLabel)+21,SCREEN_WIDTH, 1)];
     line.backgroundColor = [UIColor colorWithRed:230 / 255.0 green:230 / 255.0 blue:230 / 255.0 alpha:1];
     [back addSubview:line];
     
@@ -64,13 +64,17 @@
     [_moneyTextField setFont:[UIFont systemFontOfSize:15]];
     [back addSubview:_moneyTextField];
     
-    UILabel *label3 = [[UILabel alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(line)+30, 30, 30)];
-    label3.backgroundColor = [UIColor clearColor];
-    [back addSubview:label3];
-    label3.text= @"¥";
-    label3.textAlignment = NSTextAlignmentLeft;
-    label3.textColor =  [UIColor blackColor];
-    label3.font = [UIFont systemFontOfSize:35];
+    UIImageView *moneyView = [[UIImageView alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(line)+30, 30, 30)];
+    [moneyView setImage:[UIImage imageNamed:@"fanpiao-icon"]];
+    [back addSubview:moneyView];
+    
+//    UILabel *label3 = [[UILabel alloc]initWithFrame:CGRectMake(20, BOTTOM_Y(line)+30, 30, 30)];
+//    label3.backgroundColor = [UIColor clearColor];
+//    [back addSubview:label3];
+//    label3.text= @"¥";
+//    label3.textAlignment = NSTextAlignmentLeft;
+//    label3.textColor =  [UIColor blackColor];
+//    label3.font = [UIFont systemFontOfSize:35];
     
     UIButton *TXbutton = [[UIButton alloc]initWithFrame:CGRectMake(SCREEN_WIDTH-150, BOTTOM_Y(line)+40, 120, 20)];
     [back addSubview:TXbutton];
@@ -80,7 +84,7 @@
     [TXbutton addTarget:self action:@selector(all) forControlEvents:UIControlEventTouchUpInside];
 
     
-    UIView *line2 = [[UIView alloc]initWithFrame:CGRectMake(50, BOTTOM_Y(label3)+20,SCREEN_WIDTH-100, 1)];
+    UIView *line2 = [[UIView alloc]initWithFrame:CGRectMake(50, BOTTOM_Y(moneyView)+20,SCREEN_WIDTH-100, 1)];
     line2.backgroundColor = [UIColor colorWithRed:230 / 255.0 green:230 / 255.0 blue:230 / 255.0 alpha:1];
     [back addSubview:line2];
     
@@ -139,8 +143,10 @@
     _backView.alpha = 0.5;
     _backView.backgroundColor = BLACKS_COLOR_ZZ;
     
-    
-    _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-200)/2, SCREEN_WIDTH-80, 200)];
+    if (SCREEN_WIDTH == 320) {
+        _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-420)/2, SCREEN_WIDTH-80, 200)];
+    }else{
+        _passWordView = [[UIView alloc]initWithFrame:CGRectMake(40, (SCREEN_HEIGHT-320)/2, SCREEN_WIDTH-80, 200)];}
     _passWordView.backgroundColor = [UIColor whiteColor];
     //[_userPhotoImageView setUserInteractionEnabled:NO];
     [_passWordView.layer setCornerRadius:5];
@@ -226,6 +232,7 @@
             {
                 if ([dicDictionary[@"content"][@"state"] isEqualToString:@"no"]) {
                     [SVProgressHUD showErrorWithStatus:@"密码错误"];
+                    
                 }else{
                     
                     [self setOrad];
@@ -268,6 +275,7 @@
 
 }
 - (void)setOrad{
+    
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
     NSString *key = [defaults objectForKey:@"key"];
     NSString *secret = [defaults objectForKey:@"secret"];
@@ -288,6 +296,7 @@
                                @"secret":secret
                                };
     [SVProgressHUD showWithStatus:@"创建订单中..."];
+    NSLog(@"订单数据%@",sendDict);
     [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/hongbao/orderCreate" parameters:sendDict success:^(id responseObject)
      {
          [SVProgressHUD dismiss];
@@ -296,7 +305,7 @@
          
          if ([dicDictionary[@"code"] integerValue] == 0 )
          {
-             if ([dicDictionary[@"code"][@"ok"] integerValue] == 1) {
+             if ([dicDictionary[@"content"][@"ok"] integerValue] == 1) {
                  
                  MCCGViewController *cg = [[MCCGViewController alloc]init];
                  cg.card = self.bank;

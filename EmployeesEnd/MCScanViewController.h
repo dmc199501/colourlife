@@ -12,7 +12,7 @@
 
 @interface MCScanViewController : MCRootViewControler
 {
-    ZBarReaderView  *readerView;
+  
 }
 - (void)startScan;
 - (void)stopScan;

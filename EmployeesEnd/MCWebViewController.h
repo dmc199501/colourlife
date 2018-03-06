@@ -10,7 +10,6 @@
 #import "NJKWebViewProgress.h"
 #import "NJKWebViewProgressView.h"
 #import <MAMapKit/MAMapKit.h>
-#import <AMapLocationKit/AMapLocationKit.h>
 #import "ProgressBar.h"
 #import "WYWebProgressLayer.h"
 #import <WebKit/WebKit.h>
@@ -36,7 +35,7 @@
 @property (retain, nonatomic) NSMutableData *downloadedMutableData;
 @property (retain, nonatomic) NSURLResponse *urlResponse;
 @property (retain, nonatomic) NSString *savedFilePath;
-@property (nonatomic, copy) AMapLocatingCompletionBlock completionBlock;
+
 @property(nonatomic,strong)NSString *iosURL;
 @property (nonatomic, retain) UIWebView *phoneCallWebView;
 @property(retain,nonatomic) ProgressBar *progress;
@@ -44,7 +43,7 @@
 @property(nonatomic,strong)MBProgressHUD *weakHub;
 @property (nonatomic, strong) MAMapView *mapView;
 @property(nonatomic,assign)NSInteger tol;
-@property (nonatomic, strong) AMapLocationManager *locationManager;
+
 
 - (id)initWithTitleString:(NSString *)titleString;
 

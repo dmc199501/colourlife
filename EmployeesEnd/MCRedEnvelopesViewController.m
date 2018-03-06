@@ -12,6 +12,8 @@
 #import <ContactsUI/ContactsUI.h>
 #import <AddressBookUI/AddressBookUI.h>
 #import "MCAddressBookTableViewCell.h"
+#import "MCAccountChooseViewController.h"
+
 @interface MCRedEnvelopesViewController ()<CNContactPickerDelegate,ABPeoplePickerNavigationControllerDelegate>
 
 @end
@@ -33,6 +35,7 @@
     [super viewDidLoad];
     self.navigationItem.title = @"转账给同事";
     [self getlistdata];
+   
     
     UIView *backView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, 187.5)];
     [self.view addSubview:backView];
@@ -45,7 +48,8 @@
     [_moneyTextField setPlaceholder:@"同事OA或者手机号码"];
     [_moneyTextField setTextAlignment:NSTextAlignmentLeft];
     [_moneyTextField setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
-    [_moneyTextField setBackgroundColor:[UIColor clearColor]];
+    
+      [_moneyTextField setBackgroundColor:[UIColor clearColor]];
     [_moneyTextField setFont:[UIFont systemFontOfSize:15]];
     [backView1 addSubview:_moneyTextField];
     
@@ -89,7 +93,11 @@
     [listTableView setDataSource:self];
     listTableView.scrollEnabled = YES;
     
-    
+    if (_OASting.length>0) {
+        _moneyTextField.text = [NSString stringWithFormat:@"%@",_OASting];
+        [self next];
+    }
+
     // Do any additional setup after loading the view.
 }
 - (void)getlistdata{
@@ -333,14 +341,23 @@
     NSUserDefaults *defaults =[NSUserDefaults standardUserDefaults];
     NSString *key = [defaults objectForKey:@"key"];
     NSString *secret = [defaults objectForKey:@"secret"];
-    
-    
-    
-    NSDictionary *sendDict = @{
+    NSString *version = [NSString stringWithFormat:@"V%@",[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]];
+    NSDictionary *sendDict =[NSDictionary dictionary];
+    if (_OASting.length>0) {
+        sendDict = @{
+                                   @"username":_OASting,
+                                   @"key":key,
+                                   @"secret":secret,
+                                   @"version":version
+                                   };
+    }else{
+    sendDict = @{
                                @"username":_moneyTextField.text,
                                @"key":key,
-                               @"secret":secret
+                               @"secret":secret,
+                               @"version":version
                                };
+    }
     [SVProgressHUD showWithStatus:@"查询中"];
     [MCHttpManager PostWithIPString:BASEURL_AREA urlMethod:@"/hongbao/getEmployeeInfo" parameters:sendDict success:^(id responseObject) {
         [SVProgressHUD dismiss];
@@ -348,14 +365,30 @@
         NSLog(@"%@",dicDictionary);
         if ([dicDictionary[@"code"] integerValue] == 0 )
         {
-            if ([dicDictionary[@"content"] isKindOfClass:[NSDictionary class]])
+            if ([dicDictionary[@"content"] isKindOfClass:[NSArray class]])
             {
                 
-                MCGivingFPViewController *ZZvc = [[MCGivingFPViewController alloc]init];
-                ZZvc.type =@"1";
-                ZZvc.balance = self.balance;
-                ZZvc.dataDic = dicDictionary[@"content"][@"employeeInfo"];
-                [self.navigationController pushViewController:ZZvc animated:YES];
+                if ([dicDictionary[@"content"] count] ==1) {
+                    
+                    MCGivingFPViewController *ZZvc = [[MCGivingFPViewController alloc]init];
+                    ZZvc.type =@"1";
+                    ZZvc.balance = self.balance;
+                    
+                    ZZvc.dataDic = [dicDictionary[@"content"] objectAtIndex:0];
+                    [self.navigationController pushViewController:ZZvc animated:YES];
+                }else if([dicDictionary[@"content"] count] >1){
+                
+                    MCAccountChooseViewController *chooseVC = [[MCAccountChooseViewController alloc]init];
+                    chooseVC.listArray  = dicDictionary[@"content"];
+                    [self.navigationController pushViewController:chooseVC animated:YES];
+                
+                
+                }else {
+                
+                    [SVProgressHUD showErrorWithStatus:@"您输入的账号有误"];
+                
+                }
+               
                 
 
                 
@@ -390,6 +423,9 @@
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section;
 {
     return 0.001;
+}
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    return [[UIView alloc] init];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section;

@@ -9,8 +9,6 @@
 #import "MCRootViewControler.h"
 #import "MapView.h"
 #import <MAMapKit/MAMapKit.h>
-#import <AMapLocationKit/AMapLocationKit.h>
-
 #import "APIKey.h"
 @interface MCHomeMapViewController : MCRootViewControler
 @property (nonatomic, retain) MAMapView *mapView;
