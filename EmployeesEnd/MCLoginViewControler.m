@@ -19,7 +19,6 @@
 #import <WebKit/WebKit.h>
 
 #import "CustomButton.h"
-#import "TextField.h"
 #import "TipsView.h"
 
 #import "NSAttributedString+AttributedString.h"
